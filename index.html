@@ -353,13 +353,22 @@ footer .copy{margin-top:22px;font-size:12.5px;color:#7F8AB5}
 .sticky .btn{min-height:50px;padding:12px 20px;font-size:15px}
 body{padding-bottom:80px}
 
-/* Pop-up de compra recente (só vendas reais) */
-.toast{position:fixed;left:16px;bottom:96px;z-index:60;max-width:320px;display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-left:5px solid var(--green);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-lg);transform:translateY(20px);opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s ease}
-.toast.show{opacity:1;transform:none}
-.toast .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:#fff;font-weight:800;font-size:17px;background:linear-gradient(135deg,var(--blue),var(--purple))}
-.toast p{font-size:13.5px;line-height:1.4;color:var(--ink)}
-.toast small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-@media (min-width:960px){.toast{bottom:24px;left:24px}}
+/* Notificações de prova social: compras reais + avaliações reais */
+.toast{--tx:-50%;position:fixed;left:50%;bottom:var(--toast-bottom,16px);z-index:60;width:92vw;max-width:400px;min-height:75px;display:flex;gap:12px;align-items:center;background:#fff;border-radius:14px;padding:12px 14px 12px 18px;box-shadow:0 10px 30px rgba(23,37,84,.16),0 2px 6px rgba(23,37,84,.06);overflow:hidden;opacity:0;transform:translate(var(--tx),16px);pointer-events:none;visibility:hidden;transition:opacity .3s ease,transform .3s ease,visibility 0s linear .3s,bottom .25s ease}
+.toast.show{opacity:1;transform:translate(var(--tx),0);visibility:visible;transition:opacity .3s ease,transform .3s ease,visibility 0s,bottom .25s ease}
+.toast::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--acc,var(--blue))}
+.toast .tv{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--green-50);color:var(--green);background-repeat:no-repeat}
+.toast .tv .ico{width:22px;height:22px;stroke-width:3}
+.toast .tv.foto{background-color:#EEF1F8;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--acc,var(--blue))}
+.toast .tt{min-width:0;flex:1}
+.toast .t1{font-size:13.5px;font-weight:800;color:var(--navy);line-height:1.3;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+.toast .t1 small{font-weight:600;color:var(--muted);font-size:12px}
+.toast .t2{font-size:12.5px;color:var(--ink);line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.toast .t3{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
+.toast .t3 .okv{color:var(--green)}
+.toast .stars{color:#F5B400;letter-spacing:1px;font-size:12px}
+@media (min-width:960px){.toast{--tx:0;left:24px;bottom:24px;width:360px;max-width:360px}}
+@media (prefers-reduced-motion:reduce){.toast,.toast.show{transform:translate(var(--tx),0);transition:opacity .3s ease,visibility 0s linear .3s}}
 
 /* ===== Modal de checkout PIX ===== */
 .modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,26,66,.62);backdrop-filter:blur(4px)}
@@ -975,10 +984,10 @@ body{padding-bottom:80px}
   <div class="lb-in t-blue" id="lb-in"></div>
 </div>
 
-<!-- Pop-up: compras reais (api/vendas-recentes) alternadas com avisos sobre o produto -->
+<!-- Notificações: compras reais (api/vendas-recentes) alternadas com avaliações reais -->
 <div class="toast" id="toast" role="status" aria-live="polite">
-  <span class="av" id="toast-av"></span>
-  <p><span id="toast-txt"></span><small id="toast-sub"></small></p>
+  <span class="tv" id="toast-ic" aria-hidden="true"></span>
+  <div class="tt"><div class="t1" id="toast-t1"></div><div class="t2" id="toast-t2"></div><div class="t3" id="toast-t3"></div></div>
 </div>
 
 <!-- ============ MODAL DE CHECKOUT PIX (ZuckPay) ============ -->
@@ -1487,8 +1496,27 @@ const EXTRAS = [
     setTimeout(() => { rotulo.textContent = 'COPIAR CÓDIGO'; }, 2000);
   });
 
-  /* ---------- pop-ups de compras recentes (somente vendas reais) ---------- */
-  // Cada venda aparece uma vez; sem vendas confirmadas, nada é exibido.
+  /* ---------- notificações de prova social ---------- */
+  // Ciclo COMPRA → AVALIAÇÃO → COMPRA → … Regras de autenticidade:
+  // - compra só aparece se for real (vendas confirmadas pelo webhook); cada
+  //   venda aparece uma vez — repetir a mesma daria a impressão de várias;
+  //   sem compras reais, o ciclo segue só com avaliações;
+  // - avaliações são trechos literais dos depoimentos reais (seção de
+  //   depoimentos), publicados com autorização. "…" marca trecho omitido.
+  const AVALIACOES = [
+    { nome: 'Cláudia',  cargo: 'Professora de AEE',              foto: 'claudia',  txt: 'Com os modelos prontos, consegui encontrar uma estrutura, adaptar para cada aluno e terminar muito mais rápido.' },
+    { nome: 'Rafaela',  cargo: 'Professora',                     foto: 'rafaela',  txt: 'O que mais gostei foi ter PEI, PDI, PAEE, relatórios e pareceres no mesmo lugar.' },
+    { nome: 'Pablo',    cargo: 'Professor',                      foto: 'pablo',    txt: 'Os modelos me deram uma base pronta e facilitaram muito o preenchimento. Economizei horas de trabalho.' },
+    { nome: 'Juliana',  cargo: 'Professora de AEE',              foto: 'juliana',  txt: 'Ter os modelos como ponto de partida facilitou bastante e consegui adaptar tudo para a realidade dos meus alunos.' },
+    { nome: 'Mariana',  cargo: 'Professora de Educação Especial', foto: 'mariana', txt: 'Gostei principalmente da organização dos materiais… Agora consigo encontrar o que preciso com muito mais facilidade.' },
+    { nome: 'Fernanda', cargo: 'Professora de AEE',              foto: 'fernanda', txt: 'Os modelos me ajudaram muito na hora de organizar os registros dos atendimentos. Foi uma mão na roda para minha rotina.' },
+    { nome: 'Camila',   cargo: 'Professora de Sala de Recursos', foto: 'camila',   txt: 'Ter uma estrutura pronta me ajudou a organizar minha rotina e entender melhor o que eu precisava preparar.' },
+    { nome: 'Patrícia', cargo: 'Professora de AEE',              foto: 'patricia', txt: 'O que mais gostei foi poder editar os materiais… consegui adaptar os modelos conforme as necessidades dos meus alunos.' }
+  ];
+  const TITULOS_COMPRA = ['Compra aprovada!', 'Acesso confirmado!', 'Nova compra aprovada!', 'Acesso liberado!'];
+  const CORES = ['var(--blue)', 'var(--yellow)', 'var(--green)', 'var(--purple)'];
+  const VISIVEL = 7000, INTERVALO = 6500, PRIMEIRA = 5000;
+
   function tempoAtras(min) {
     if (min < 60) return `há ${min} min`;
     const h = Math.floor(min / 60);
@@ -1496,46 +1524,62 @@ const EXTRAS = [
     const d = Math.floor(h / 24);
     return `há ${d} ${d === 1 ? 'dia' : 'dias'}`;
   }
-  // Avisos verdadeiros sobre o produto, exibidos entre as compras reais.
-  const AVISOS = [
-    { av: '⚡', txt: '<strong>Acesso liberado</strong> logo após a confirmação do PIX', sub: 'Central AEE' },
-    { av: '✏️', txt: '<strong>Modelos editáveis</strong> para adaptar a cada aluno', sub: 'Central AEE' },
-    { av: '🛡️', txt: '<strong>30 dias de garantia</strong> para conhecer o material', sub: 'Central AEE' },
-    { av: '🧩', txt: '<strong>Complementos opcionais</strong> para escolher no checkout', sub: 'Central AEE' }
-  ];
+
+  // Mantém a notificação acima da barra fixa do celular quando ela aparece.
+  function posicaoToast() {
+    const st = $('sticky');
+    const visivel = getComputedStyle(st).display !== 'none' && !st.classList.contains('hide');
+    $('toast').style.setProperty('--toast-bottom', visivel ? (st.offsetHeight + 12) + 'px' : '16px');
+  }
+
+  function montarCompra(v, n) {
+    const plano = v.plano.replace(/^Central AEE — /, '');
+    $('toast-ic').className = 'tv';
+    $('toast-ic').style.backgroundImage = '';
+    $('toast-ic').innerHTML = '<svg class="ico"><use href="#i-check"/></svg>';
+    $('toast-t1').textContent = TITULOS_COMPRA[n % TITULOS_COMPRA.length];
+    $('toast-t2').textContent = `${v.nome} garantiu o ${plano} da Central AEE.`;
+    $('toast-t3').innerHTML = `<span class="okv">✓ Pagamento confirmado</span> · ${tempoAtras(v.minutos)}`;
+  }
+  function montarAvaliacao(a) {
+    const ic = $('toast-ic');
+    ic.className = 'tv foto';
+    ic.innerHTML = '';
+    // Rosto recortado do card do depoimento (a foto fica no topo, à esquerda).
+    ic.style.backgroundImage = `url(img/depoimento-${a.foto}.jpg)`;
+    ic.style.backgroundSize = '134px auto';
+    ic.style.backgroundPosition = '-9px -10px';
+    $('toast-t1').innerHTML = `${esc(a.nome)} <small>${esc(a.cargo)}</small>`;
+    $('toast-t2').textContent = `“${a.txt}”`;
+    $('toast-t3').innerHTML = '<span class="stars" aria-label="5 de 5 estrelas">★★★★★</span>';
+  }
+
   async function popups() {
     let vendas = [];
     try {
       const r = await fetch(`${API}/vendas-recentes?planos=${Object.keys(PLANOS).join(',')}`);
       if (r.ok) vendas = (await r.json()).vendas || [];
-    } catch (_) { /* sem API: mostra só os avisos */ }
-    // Cada compra real aparece uma vez, intercalada com os avisos; depois
-    // seguem só os avisos. Nenhuma compra é inventada.
-    const fila = [];
-    vendas.forEach((v, i) => { fila.push({ venda: v }); fila.push(AVISOS[i % AVISOS.length]); });
-    if (!vendas.length) fila.push(...AVISOS);
+    } catch (_) { /* sem API: só avaliações */ }
+
     const toast = $('toast');
-    let i = 0, aviso = vendas.length % AVISOS.length;
-    const proxima = () => {
-      const item = i < fila.length ? fila[i++] : AVISOS[aviso++ % AVISOS.length];
-      if (!modal.classList.contains('open') && !$('lightbox').classList.contains('open')) {
-        if (item.venda) {
-          const v = item.venda;
-          $('toast-av').textContent = v.nome.charAt(0);
-          $('toast-txt').innerHTML = `<strong>${esc(v.nome)}</strong> comprou o <strong>${esc(v.plano.replace(/^Central AEE — /, ''))}</strong>`;
-          const via = v.metodo === 'cartao' ? 'via cartão' : v.metodo === 'pix' ? 'via PIX' : 'compra confirmada';
-          $('toast-sub').textContent = tempoAtras(v.minutos) + ' · ' + via;
-        } else {
-          $('toast-av').textContent = item.av;
-          $('toast-txt').innerHTML = item.txt;
-          $('toast-sub').textContent = item.sub;
-        }
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 5000);
-      }
-      setTimeout(proxima, 16000);
+    let iVenda = 0, iAval = 0, n = 0, vezCompra = true;
+    const bloqueado = () => modal.classList.contains('open') || $('lightbox').classList.contains('open') || document.hidden;
+
+    const ciclo = () => {
+      if (bloqueado()) return setTimeout(ciclo, INTERVALO);
+      const temVenda = iVenda < vendas.length;
+      if (vezCompra && temVenda) montarCompra(vendas[iVenda++], n);
+      else montarAvaliacao(AVALIACOES[iAval++ % AVALIACOES.length]);
+      vezCompra = !vezCompra;
+      toast.style.setProperty('--acc', CORES[n++ % CORES.length]);
+      posicaoToast();
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(ciclo, INTERVALO);
+      }, VISIVEL);
     };
-    setTimeout(proxima, 8000);
+    setTimeout(ciclo, PRIMEIRA);
   }
 
   /* ---------- ampliar prévias dos modelos ---------- */
@@ -1570,6 +1614,7 @@ const EXTRAS = [
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => vis.set(en.target, en.isIntersecting));
       sticky.classList.toggle('hide', vis.get(hero) || vis.get(oferta));
+      posicaoToast();
     }, { threshold: 0.05 });
     io.observe(hero); io.observe(oferta);
 
@@ -1581,6 +1626,7 @@ const EXTRAS = [
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
   }
 
+  addEventListener('resize', posicaoToast);
   $('ano').textContent = new Date().getFullYear();
 })();
 </script>

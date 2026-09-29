@@ -117,13 +117,25 @@ cartão), `Purchase` (pagamento confirmado, com `eventID` `purchase-<transaction
 para deduplicar com a API de Conversões, se for usada no futuro). Os dados de
 UTM e os cookies `_fbc`/`_fbp` também vão para a ZuckPay em cada cobrança.
 
-## Pop-ups de compras
+## Notificações de prova social
 
-Alternam compras **reais**, confirmadas pelo webhook ("Maria comprou o Plano
-Básico · há 3 min · via PIX"; últimos 7 dias, até 10), com avisos verdadeiros
-sobre o produto. Só sai o primeiro nome: e-mail, CPF, telefone e valor nunca
-deixam o servidor. Não use nomes ou horários inventados: notificação de compra
-falsa é propaganda enganosa (CDC, art. 37).
+Pequenas notificações no canto (inferior esquerdo no desktop; centralizadas e
+acima da barra fixa no celular), uma por vez, no ciclo
+**COMPRA → AVALIAÇÃO → COMPRA → …**: 7 s visíveis, 6,5 s de intervalo,
+animação de 300 ms. Pausam com o checkout ou uma prévia aberta.
+
+- **Compra aprovada**: só compras **reais**, confirmadas pelo webhook
+  (`/api/vendas-recentes`, últimos 7 dias). Mostra o primeiro nome, o plano e
+  há quanto tempo — "Mariana garantiu o Plano Completo da Central AEE · ✓
+  Pagamento confirmado · há 3 min". Cada venda aparece uma vez; sem vendas
+  reais, o ciclo segue só com avaliações. Sem Redis não há lista de vendas.
+- **Avaliação**: os 8 depoimentos reais da página (clientes com autorização),
+  com a foto recortada do card, cargo e 5 estrelas. O texto é trecho literal
+  do depoimento; "…" marca trecho omitido. Editar em `AVALIACOES`, no fim do
+  `index.html`.
+
+Nunca adicione compradores, cidades, horários, valores ou contagens
+inventados: notificação de compra falsa é propaganda enganosa (CDC, art. 37).
 
 ## Pendências de conteúdo (marcadas com `TROCAR` no HTML)
 
