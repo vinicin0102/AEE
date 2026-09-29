@@ -44,7 +44,9 @@ valem para os dois planos.
 
 ## Pop-ups de compras
 
-Mostram **só vendas reais**: `api/vendas-recentes.php` lê o log de pagamentos
+Alternam compras reais com avisos verdadeiros sobre o produto (acesso após
+o PIX, modelos editáveis, garantia, complementos). As compras vêm só de vendas
+reais: `api/vendas-recentes.php` lê o log de pagamentos
 confirmados pelo webhook e devolve primeiro nome, plano e há quanto tempo
 (últimos 7 dias, até 10). Cada venda aparece uma vez por visita; sem vendas,
 não aparece pop-up nenhum. E-mail, CPF, telefone e valor nunca saem do
@@ -63,8 +65,9 @@ cobrança fica, por exemplo, "Central AEE + Kit Professor TEA + Pasta do Aluno".
 
 ## Pendências de conteúdo (marcadas com `TROCAR` no HTML)
 
-1. **Prévias da seção "Veja o que você recebe"**: são desenhos em CSS da
-   estrutura genérica dos modelos. Troque pelas capturas reais das páginas
+1. **Prévias da seção "Veja o que você recebe"**: são páginas de exemplo em
+   HTML (avaliação, acompanhamento, planejamento, registro, relatório e
+   observação), legíveis e ampliáveis. Troque pelas capturas reais das páginas
    entregues e remova a legenda "Prévias ilustrativas".
 2. **Quantidade de materiais**: a página diz "Dezenas de materiais". Só troque
    por um número (ex.: "+100") quando o conteúdo final tiver essa quantidade.

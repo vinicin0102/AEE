@@ -186,22 +186,35 @@ section{padding:64px 0;position:relative;overflow-x:clip}
 /* Galeria */
 .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:860px;margin:0 auto}
 .doc{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;margin:0}
-.doc-page{position:relative;aspect-ratio:1/1.05;margin:12px 12px 0;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 12px;display:flex;flex-direction:column;gap:7px;overflow:hidden}
-.doc-page::before{content:"";position:absolute;inset:0 0 auto;height:6px;background:var(--c)}
-.doc-page .t{height:9px;width:62%;border-radius:4px;background:var(--c);opacity:.85;margin-top:4px}
-.doc-page .l{height:6px;border-radius:3px;background:#E8ECF5}
-.doc-page .l.s{width:55%}.doc-page .l.m{width:78%}
-.doc-page .field{display:flex;gap:6px;align-items:center}
-.doc-page .field i{height:6px;width:32%;border-radius:3px;background:#CBD3E6}
-.doc-page .field b{flex:1;height:0;border-bottom:1.5px dashed #CBD3E6}
-.doc-page .grid-t{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:2px}
-.doc-page .grid-t span{height:14px;border-radius:3px;background:var(--c50);border:1px solid #E3E8F3}
-.doc-page .chk{display:flex;gap:6px;align-items:center}
-.doc-page .chk u{width:9px;height:9px;border:1.5px solid var(--c);border-radius:2px}
-.doc-page .chk i{height:6px;flex:1;border-radius:3px;background:#E8ECF5}
 .doc-cap{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
 .doc-cap strong{font-size:14.5px;color:var(--navy);line-height:1.3}
-.pill{align-self:flex-start;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--green);background:var(--green-50);padding:4px 8px;border-radius:999px}
+.pill{align-self:flex-start;white-space:nowrap;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--green);background:var(--green-50);padding:4px 8px;border-radius:999px}
+.mdoc{container-type:inline-size;cursor:zoom-in;border:0;background:none;padding:0;margin:12px 12px 0;text-align:left;font:inherit;display:block;width:calc(100% - 24px)}
+.mdoc:focus-visible{outline:3px solid var(--c);outline-offset:3px;border-radius:10px}
+.pg{aspect-ratio:1/1.3;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6cqw 6cqw 5cqw;overflow:hidden;color:#2A3150;font-size:3.6cqw;line-height:1.35;box-shadow:0 1px 3px rgba(23,37,84,.06);position:relative}
+.pg::before{content:"";position:absolute;inset:0 0 auto;height:1.6cqw;background:var(--c)}
+.pg .brandline{display:flex;justify-content:space-between;align-items:center;font-size:2.8cqw;font-weight:800;letter-spacing:.08em;color:var(--c);margin:1cqw 0 2.5cqw}
+.pg .brandline span:last-child{color:#98A0BA;font-weight:600;letter-spacing:0}
+.pg h4{margin:0 0 3cqw;font-size:5.4cqw;line-height:1.2;color:var(--navy);font-weight:800}
+.pg .sec{font-size:3cqw;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--c);margin:3.2cqw 0 1.4cqw;padding-bottom:.8cqw;border-bottom:.3cqw solid var(--c50)}
+.pg .f{display:flex;gap:1.5cqw;align-items:flex-end;margin:1.3cqw 0;white-space:nowrap}
+.pg .f b{font-weight:700}
+.pg .f i{flex:1;border-bottom:.3cqw dashed #C5CDE0;height:3cqw}
+.pg .ln{border-bottom:.3cqw dashed #C5CDE0;height:4.4cqw}
+.pg table{width:100%;border-collapse:collapse;font-size:3.1cqw;margin-top:1cqw}
+.pg th{background:var(--c50);color:var(--navy);font-weight:800;text-align:left;padding:1.2cqw 1.4cqw;border:.25cqw solid #DDE3EF}
+.pg td{padding:1.2cqw 1.4cqw;border:.25cqw solid #DDE3EF;height:5.6cqw}
+.pg td.c{text-align:center;width:14%}
+.pg .ck{display:inline-flex;align-items:center;gap:1cqw;margin-right:3cqw}
+.pg .ck::before{content:"";width:2.8cqw;height:2.8cqw;border:.35cqw solid var(--c);border-radius:.6cqw}
+.pg .fade{position:absolute;left:0;right:0;bottom:0;height:14cqw;background:linear-gradient(transparent,#fff)}
+.zoom-hint{font-size:11.5px;color:var(--muted);font-weight:600}
+.lightbox{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,26,66,.7);backdrop-filter:blur(4px)}
+.lightbox.open{display:flex}
+.lightbox .lb-in{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:14px}
+.lightbox .pg{aspect-ratio:auto;min-height:0;border-radius:14px}
+.lightbox .pg .fade{display:none}
+.lb-close{position:sticky;top:8px;float:right;margin:8px 8px -48px 0;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:#fff;box-shadow:var(--shadow);cursor:pointer;display:grid;place-items:center;color:var(--navy)}
 .disclaimer-sm{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
 
 /* Antes / Depois */
@@ -647,10 +660,10 @@ body{padding-bottom:80px}
 
 <!-- ============ POR DENTRO / VEJA O QUE VOCÊ RECEBE ============ -->
 <!--
-  TROCAR: as prévias abaixo são desenhadas em CSS e mostram só a estrutura
-  genérica de cada tipo de modelo. Substitua cada .doc-page por um <img> com
-  a captura real da página correspondente do material entregue, e então
-  remova o aviso "Prévias ilustrativas" logo abaixo da galeria.
+  TROCAR: as prévias abaixo são páginas de exemplo montadas em HTML com a
+  estrutura típica de cada modelo. Quando tiver as capturas reais do material
+  entregue, troque o conteúdo de cada .pg por um <img> da página
+  correspondente e remova o aviso "Prévias ilustrativas" abaixo da galeria.
 -->
 <section class="bg-green">
   <div class="wrap">
@@ -661,58 +674,61 @@ body{padding-bottom:80px}
     </div>
     <div class="gallery">
       <figure class="doc reveal t-purple">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <div class="field"><i></i><b></b></div><div class="field"><i></i><b></b></div>
-          <span class="l"></span><span class="l m"></span>
-          <div class="chk"><u></u><i></i></div><div class="chk"><u></u><i></i></div><div class="chk"><u></u><i></i></div>
-          <span class="l s"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Modelo de avaliação</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Modelo de avaliação"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Avaliação</span></div><h4>Avaliação Pedagógica Inicial — AEE</h4>
+<div class="sec">Identificação</div><div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Data de nascimento:</b><i></i></div><div class="f"><b>Ano/Turma:</b><i></i></div><div class="f"><b>Professor(a) regente:</b><i></i></div>
+<div class="sec">Áreas observadas</div>
+<table><tr><th>Habilidade</th><th class="c">Realiza</th><th class="c">Com apoio</th><th class="c">Ainda não</th></tr>
+<tr><td>Comunicação e linguagem</td><td></td><td></td><td></td></tr><tr><td>Interação social</td><td></td><td></td><td></td></tr>
+<tr><td>Autonomia</td><td></td><td></td><td></td></tr><tr><td>Coordenação motora</td><td></td><td></td><td></td></tr>
+<tr><td>Atenção e concentração</td><td></td><td></td><td></td></tr></table>
+<div class="sec">Observações</div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Modelo de avaliação</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
       <figure class="doc reveal t-blue">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <div class="field"><i></i><b></b></div>
-          <div class="grid-t"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <span class="l m"></span><span class="l"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Ficha de acompanhamento</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Ficha de acompanhamento"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Acompanhamento</span></div><h4>Ficha de Acompanhamento Mensal</h4>
+<div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Mês/Ano:</b><i></i></div>
+<table><tr><th>Data</th><th>Objetivo trabalhado</th><th>Estratégia</th><th>Observações</th></tr>
+<tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr></table>
+<div class="sec">Evolução no período</div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Ficha de acompanhamento</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
       <figure class="doc reveal t-green">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <span class="l s"></span><span class="l"></span><span class="l m"></span>
-          <div class="grid-t"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <span class="l"></span><span class="l s"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Modelo de planejamento</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Modelo de planejamento"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Planejamento</span></div><h4>Plano de Atendimento Educacional Especializado</h4>
+<div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Período:</b><i></i></div>
+<div class="sec">Objetivos</div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Recursos e materiais</div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Estratégias</div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Organização do atendimento</div>
+<div class="f"><b>Frequência:</b><span class="ck">1x</span><span class="ck">2x</span><span class="ck">3x por semana</span></div>
+<div class="f"><b>Duração:</b><i></i></div><div class="f"><b>Articulação com o(a) professor(a) regente:</b><i></i></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Modelo de planejamento</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
       <figure class="doc reveal t-orange">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <div class="field"><i></i><b></b></div><div class="field"><i></i><b></b></div><div class="field"><i></i><b></b></div>
-          <span class="l"></span><span class="l m"></span><span class="l"></span><span class="l s"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Registro de atendimento</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Registro de atendimento"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Registro</span></div><h4>Registro de Atendimento</h4>
+<div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Data:</b><i></i></div><div class="f"><b>Horário:</b><i></i></div>
+<div class="f"><b>Modalidade:</b><span class="ck">Individual</span><span class="ck">Grupo</span></div>
+<div class="sec">Atividade realizada</div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Resposta do estudante</div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Encaminhamentos</div><div class="ln"></div><div class="ln"></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Registro de atendimento</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
       <figure class="doc reveal t-pink">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <span class="l"></span><span class="l"></span><span class="l m"></span>
-          <span class="l"></span><span class="l"></span><span class="l s"></span>
-          <span class="l"></span><span class="l m"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Relatório</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Relatório"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Relatório</span></div><h4>Relatório Semestral de Acompanhamento</h4>
+<div class="sec">1. Identificação</div><div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Escola:</b><i></i></div><div class="f"><b>Período:</b><i></i></div>
+<div class="sec">2. Desenvolvimento observado</div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+<div class="sec">3. Avanços</div><div class="ln"></div><div class="ln"></div>
+<div class="sec">4. Próximos passos</div><div class="ln"></div><div class="ln"></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Relatório</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
       <figure class="doc reveal t-teal">
-        <div class="doc-page" aria-hidden="true">
-          <span class="t"></span>
-          <div class="field"><i></i><b></b></div>
-          <div class="chk"><u></u><i></i></div><div class="chk"><u></u><i></i></div>
-          <span class="l"></span><span class="l m"></span><span class="l s"></span>
-        </div>
-        <figcaption class="doc-cap"><strong>Ficha de observação</strong><span class="pill">MATERIAL EDITÁVEL</span></figcaption>
+        <button type="button" class="mdoc" aria-label="Ampliar prévia: Ficha de observação"><div class="pg"><div class="brandline"><span>CENTRAL AEE</span><span>Observação</span></div><h4>Ficha de Observação</h4>
+<div class="f"><b>Estudante:</b><i></i></div><div class="f"><b>Data:</b><i></i></div><div class="f"><b>Observador(a):</b><i></i></div>
+<div class="f"><b>Contexto:</b><span class="ck">Sala regular</span><span class="ck">Recreio</span><span class="ck">Sala de recursos</span></div>
+<div class="sec">Comportamentos observados</div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Interação com colegas</div><div class="ln"></div><div class="ln"></div>
+<div class="sec">Sugestões para o planejamento</div><div class="ln"></div><div class="ln"></div><div class="fade"></div></div></button>
+        <figcaption class="doc-cap"><strong>Ficha de observação</strong><span class="pill">MATERIAL EDITÁVEL</span><span class="zoom-hint">Toque para ampliar</span></figcaption>
       </figure>
     </div>
     <p class="disclaimer-sm">Prévias ilustrativas da estrutura dos modelos.</p>
@@ -928,10 +944,15 @@ body{padding-bottom:80px}
   <a href="#oferta" class="btn btn-primary">QUERO ACESSAR</a>
 </div>
 
-<!-- Pop-up de compra recente: só aparece com vendas reais (api/vendas-recentes.php) -->
+<!-- Ampliação das prévias -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Prévia do modelo">
+  <div class="lb-in t-blue" id="lb-in"></div>
+</div>
+
+<!-- Pop-up: compras reais (api/vendas-recentes.php) alternadas com avisos sobre o produto -->
 <div class="toast" id="toast" role="status" aria-live="polite">
   <span class="av" id="toast-av"></span>
-  <p><strong id="toast-nome"></strong> comprou o <strong id="toast-plano"></strong><small id="toast-tempo"></small></p>
+  <p><span id="toast-txt"></span><small id="toast-sub"></small></p>
 </div>
 
 <!-- ============ MODAL DE CHECKOUT PIX (ZuckPay) ============ -->
@@ -1278,29 +1299,68 @@ const EXTRAS = [
     const d = Math.floor(h / 24);
     return `há ${d} ${d === 1 ? 'dia' : 'dias'}`;
   }
+  // Avisos verdadeiros sobre o produto, exibidos entre as compras reais.
+  const AVISOS = [
+    { av: '⚡', txt: '<strong>Acesso liberado</strong> logo após a confirmação do PIX', sub: 'Central AEE' },
+    { av: '✏️', txt: '<strong>Modelos editáveis</strong> para adaptar a cada aluno', sub: 'Central AEE' },
+    { av: '🛡️', txt: '<strong>30 dias de garantia</strong> para conhecer o material', sub: 'Central AEE' },
+    { av: '🧩', txt: '<strong>Complementos opcionais</strong> para escolher no checkout', sub: 'Central AEE' }
+  ];
   async function popups() {
     let vendas = [];
     try {
       const r = await fetch(`${API}/vendas-recentes.php?planos=${Object.keys(PLANOS).join(',')}`);
       if (r.ok) vendas = (await r.json()).vendas || [];
-    } catch (_) { return; }
+    } catch (_) { /* sem API: mostra só os avisos */ }
+    // Cada compra real aparece uma vez, intercalada com os avisos; depois
+    // seguem só os avisos. Nenhuma compra é inventada.
+    const fila = [];
+    vendas.forEach((v, i) => { fila.push({ venda: v }); fila.push(AVISOS[i % AVISOS.length]); });
+    if (!vendas.length) fila.push(...AVISOS);
     const toast = $('toast');
-    let i = 0;
+    let i = 0, aviso = vendas.length % AVISOS.length;
     const proxima = () => {
-      if (i >= vendas.length) return;
-      const v = vendas[i++];
-      if (!modal.classList.contains('open')) {
-        $('toast-av').textContent = v.nome.charAt(0);
-        $('toast-nome').textContent = v.nome;
-        $('toast-plano').textContent = v.plano.replace(/^Central AEE — /, '');
-        $('toast-tempo').textContent = tempoAtras(v.minutos);
+      const item = i < fila.length ? fila[i++] : AVISOS[aviso++ % AVISOS.length];
+      if (!modal.classList.contains('open') && !$('lightbox').classList.contains('open')) {
+        if (item.venda) {
+          const v = item.venda;
+          $('toast-av').textContent = v.nome.charAt(0);
+          $('toast-txt').innerHTML = `<strong>${esc(v.nome)}</strong> comprou o <strong>${esc(v.plano.replace(/^Central AEE — /, ''))}</strong>`;
+          $('toast-sub').textContent = tempoAtras(v.minutos) + ' · compra confirmada';
+        } else {
+          $('toast-av').textContent = item.av;
+          $('toast-txt').innerHTML = item.txt;
+          $('toast-sub').textContent = item.sub;
+        }
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 5000);
       }
-      setTimeout(proxima, 14000);
+      setTimeout(proxima, 16000);
     };
-    setTimeout(proxima, 6000);
+    setTimeout(proxima, 8000);
   }
+
+  /* ---------- ampliar prévias dos modelos ---------- */
+  const lb = $('lightbox'), lbIn = $('lb-in');
+  let lbFoco = null;
+  document.querySelectorAll('.mdoc').forEach(btn => btn.addEventListener('click', () => {
+    const tom = [...btn.closest('.doc').classList].find(c => c.startsWith('t-')) || 't-blue';
+    lbIn.className = 'lb-in ' + tom;
+    lbIn.innerHTML = '<button type="button" class="lb-close" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>' + btn.innerHTML;
+    lbIn.querySelector('.lb-close').addEventListener('click', fecharLb);
+    lbFoco = btn;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbIn.querySelector('.lb-close').focus();
+  }));
+  function fecharLb() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    if (lbFoco) lbFoco.focus();
+  }
+  lb.addEventListener('click', e => { if (e.target === lb) fecharLb(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) fecharLb(); });
+
   popups();
 
   /* ---------- barra fixa e animações ---------- */
