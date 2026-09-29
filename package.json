@@ -1,0 +1,6 @@
+{
+  "name": "central-aee",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}

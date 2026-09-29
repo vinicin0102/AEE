@@ -11,7 +11,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Pixel / UTM do produto Central AEE entram aqui (não reaproveitar os do produto de Arritmias). -->
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1082049094820977');
+fbq('track', 'PageView');
+fbq('track', 'ViewContent', { content_name: 'Central AEE', content_type: 'product', currency: 'BRL', value: 27.90 });
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1082049094820977&ev=PageView&noscript=1"></noscript>
+<!-- End Meta Pixel -->
 
 <style>
 :root{
@@ -287,6 +299,7 @@ section{padding:64px 0;position:relative;overflow-x:clip}
 .summary{display:none;background:#FAFBFE;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:14.5px}
 .summary.show{display:block}
 .summary-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--muted)}
+.summary-row span:last-child{white-space:nowrap}
 .summary-row.total{border-top:1px solid var(--line);margin-top:6px;padding-top:9px;color:var(--navy);font-weight:800;font-size:16px}
 .trust{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:16px;font-size:13.5px;font-weight:600;color:var(--muted)}
 .trust span{display:flex;align-items:center;gap:6px}
@@ -377,6 +390,8 @@ body{padding-bottom:80px}
 .pay-tabs label:has(input:checked){border-color:var(--blue);background:var(--blue-50)}
 .pay-tabs label:has(input:focus-visible){outline:3px solid var(--blue-50);outline-offset:2px}
 .pay-tabs .ico{width:20px;height:20px}
+.pay-tabs .off{font-size:10.5px;font-weight:800;color:#fff;background:var(--green);padding:2px 6px;border-radius:999px;letter-spacing:.03em}
+.summary-row.desc{color:var(--green);font-weight:700}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .field-g select{width:100%;font:inherit;font-size:16px;padding:13px 12px;border:1.5px solid #D5DBEA;border-radius:12px;background:#fff;color:var(--ink)}
 .secure{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:-4px 0 12px}
@@ -848,7 +863,7 @@ body{padding-bottom:80px}
           <div class="price">
             <div class="value"><sup>R$</sup>27,90</div>
             <span class="once">pagamento único</span>
-            <span class="pix"><svg class="ico" style="width:14px;height:14px"><use href="#i-bolt"/></svg>PIX ou cartão</span>
+            <span class="pix"><svg class="ico" style="width:14px;height:14px"><use href="#i-card"/></svg>5% OFF no cartão</span>
           </div>
           <button type="button" class="btn btn-primary btn-block js-comprar" data-plano="aee-completo"><svg class="ico"><use href="#i-cart"/></svg>QUERO O PLANO COMPLETO</button>
         </div>
@@ -904,7 +919,7 @@ body{padding-bottom:80px}
       </details>
       <details class="t-green">
         <summary>É pagamento único?<svg class="ico"><use href="#i-plus"/></svg></summary>
-        <div class="ans">Sim. O pagamento é feito uma única vez, sem mensalidade, via PIX ou cartão de crédito (à vista ou parcelado). Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.</div>
+        <div class="ans">Sim. O pagamento é feito uma única vez, sem mensalidade, via PIX ou cartão de crédito (à vista ou parcelado, com 5% de desconto no cartão). Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.</div>
       </details>
       <details class="t-teal">
         <summary>Tenho acesso por quanto tempo?<svg class="ico"><use href="#i-plus"/></svg></summary>
@@ -960,7 +975,7 @@ body{padding-bottom:80px}
   <div class="lb-in t-blue" id="lb-in"></div>
 </div>
 
-<!-- Pop-up: compras reais (api/vendas-recentes.php) alternadas com avisos sobre o produto -->
+<!-- Pop-up: compras reais (api/vendas-recentes) alternadas com avisos sobre o produto -->
 <div class="toast" id="toast" role="status" aria-live="polite">
   <span class="av" id="toast-av"></span>
   <p><span id="toast-txt"></span><small id="toast-sub"></small></p>
@@ -1002,16 +1017,14 @@ body{padding-bottom:80px}
         <p class="err" data-erro="telefone"></p>
       </div>
       <div class="dlg-sec" style="margin-top:22px;padding-top:18px;border-top:1px dashed var(--line)">
-        <p class="bumps-title">Quer deixar sua Central AEE ainda mais completa?</p>
-        <p class="bumps-sub">Complementos opcionais. Cada um é um produto independente e entra no mesmo pagamento.</p>
-        <div class="bumps" id="bumps"><!-- preenchido pelo script a partir de EXTRAS --></div>
-      </div>
-      <div class="dlg-sec" style="padding-top:18px;border-top:1px dashed var(--line)">
         <p class="bumps-title" style="margin-bottom:10px">Forma de pagamento</p>
         <div class="pay-tabs" role="radiogroup" aria-label="Forma de pagamento">
-          <label><input type="radio" name="metodo" value="pix" checked><svg class="ico"><use href="#i-bolt"/></svg>PIX</label>
-          <label><input type="radio" name="metodo" value="cartao"><svg class="ico"><use href="#i-card"/></svg>Cartão</label>
+          <label><input type="radio" name="metodo" value="pix"><svg class="ico"><use href="#i-bolt"/></svg>PIX</label>
+          <label><input type="radio" name="metodo" value="cartao"><svg class="ico"><use href="#i-card"/></svg>Cartão <span class="off">5% OFF</span></label>
         </div>
+        <p class="hint" id="ck-hint">Preencha seus dados e escolha a forma de pagamento para continuar.</p>
+      </div>
+      <div id="ck-etapa2" hidden>
         <div id="ck-cartao" hidden>
           <p class="secure"><svg class="ico"><use href="#i-lock"/></svg>Os dados do cartão vão direto para a ZuckPay e não ficam salvos.</p>
           <div class="field-g">
@@ -1042,9 +1055,14 @@ body{padding-bottom:80px}
             <p class="err" data-erro="cartao-parcelas"></p>
           </div>
         </div>
+      <div class="dlg-sec" style="padding-top:18px;border-top:1px dashed var(--line)">
+        <p class="bumps-title">Quer deixar sua Central AEE ainda mais completa?</p>
+        <p class="bumps-sub">Complementos opcionais. Cada um é um produto independente e entra no mesmo pagamento.</p>
+        <div class="bumps" id="bumps"><!-- preenchido pelo script a partir de EXTRAS --></div>
       </div>
-      <div class="dlg-items" id="ck-itens"></div>
-      <button type="submit" class="btn btn-primary btn-block" id="ck-enviar"><span class="spin"></span><span class="js-label">GERAR PIX</span></button>
+        <div class="dlg-items" id="ck-itens"></div>
+        <button type="submit" class="btn btn-primary btn-block" id="ck-enviar"><span class="spin"></span><span class="js-label">GERAR PIX</span></button>
+      </div>
       <p class="fineprint">Seus dados são usados apenas para emitir a cobrança e entregar o material.</p>
     </form>
 
@@ -1082,15 +1100,16 @@ body{padding-bottom:80px}
 // Caminho dos endpoints PHP da ZuckPay (a pasta api/ na raiz do site).
 const API = '/api';
 
-// Planos: ids iguais aos de api/config.php. O preço cobrado é sempre o do
+// Planos: ids iguais aos de lib/config.js. O preço cobrado é sempre o do
 // servidor; estes valores (em centavos) servem só para exibição.
 const PLANOS = {
   'aee-basico':   { nome: 'Plano Básico',   preco: 1290 },
   'aee-completo': { nome: 'Plano Completo', preco: 2790 }
 };
 
-// Parcelas oferecidas no cartão: o mesmo max_parcelas de api/config.php.
+// Cartão: parcelas e desconto iguais aos de lib/config.js (lá é que vale).
 const MAX_PARCELAS = 3;
+const DESCONTO_CARTAO = 0.05;
 
 // Respostas do FAQ que dependem do produto real. Deixe vazio ('') para
 // exibir o texto genérico, que não promete nada que possa não existir.
@@ -1109,7 +1128,7 @@ const FAQ_PADRAO = {
 };
 
 // Extras (order bumps), exibidos só no checkout. Ids e preços precisam ser
-// os mesmos de $extrasAee em api/config.php — lá é que vale o preço.
+// os mesmos de EXTRAS em lib/config.js — lá é que vale o preço.
 const EXTRAS = [
   { id:'relatorios', tom:'blue',   nome:'Banco de Relatórios e Pareceres',   desc:'Modelos de relatórios e pareceres para diferentes situações pedagógicas.', preco:790,  sim:'SIM! Quero adicionar o Banco de Relatórios' },
   { id:'atividades', tom:'purple', nome:'Banco de Atividades Adaptadas',     desc:'Atividades e recursos para diferentes habilidades e necessidades pedagógicas.', preco:990,  sim:'SIM! Quero adicionar o Banco de Atividades' },
@@ -1151,7 +1170,10 @@ const EXTRAS = [
 
   let plano = 'aee-completo';
   const selecionados = () => EXTRAS.filter(e => lista.querySelector(`input[value="${CSS.escape(e.id)}"]`).checked);
-  const total = () => PLANOS[plano].preco + selecionados().reduce((s, e) => s + e.preco, 0);
+  const bruto = () => PLANOS[plano].preco + selecionados().reduce((s, e) => s + e.preco, 0);
+  const metodo = () => (document.querySelector('#ck-form input[name="metodo"]:checked') || {}).value || '';
+  const desconto = () => (metodo() === 'cartao' ? Math.round(bruto() * DESCONTO_CARTAO) : 0);
+  const total = () => bruto() - desconto();
 
   function atualizar() {
     lista.querySelectorAll('.bump').forEach(b => {
@@ -1164,6 +1186,7 @@ const EXTRAS = [
     $('ck-itens').innerHTML =
       `<div class="summary-row"><span>Central AEE — ${esc(PLANOS[plano].nome)}</span><span>${brl(PLANOS[plano].preco)}</span></div>` +
       sel.map(e => `<div class="summary-row"><span>+ ${esc(e.nome)}</span><span>${brl(e.preco)}</span></div>`).join('') +
+      (desconto() ? `<div class="summary-row desc"><span>Desconto de 5% no cartão</span><span>− ${brl(desconto())}</span></div>` : '') +
       `<div class="summary-row total"><span>Total</span><span>${brl(total())}</span></div>`;
     $('ck-total').textContent = brl(total());
   }
@@ -1172,9 +1195,36 @@ const EXTRAS = [
   /* ---------- checkout PIX e cartão (ZuckPay) ---------- */
   const modal = $('checkout'), form = $('ck-form'), enviar = $('ck-enviar');
   let pedido = null, pedidoChave = '', poll = null, contagem = null, ultimoFoco = null;
-  const metodo = () => form.querySelector('input[name="metodo"]:checked').value;
+  const pixelMetodo = new Set();
+
+  function cpfOk(v) {
+    const c = v.replace(/\D/g, '');
+    if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+    for (let p = 9; p < 11; p++) {
+      let s = 0;
+      for (let i = 0; i < p; i++) s += Number(c[i]) * (p + 1 - i);
+      if (((10 * s) % 11) % 10 !== Number(c[p])) return false;
+    }
+    return true;
+  }
+  // Os extras (e o botão de pagar) só aparecem depois dos dados e da forma de pagamento.
+  function dadosOk() {
+    return $('ck-nome').value.trim().length >= 3 &&
+      cpfOk($('ck-cpf').value) &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('ck-email').value.trim()) &&
+      $('ck-telefone').value.replace(/\D/g, '').length >= 10;
+  }
+  function verificarEtapa() {
+    const etapa2 = $('ck-etapa2');
+    if (etapa2.hidden && dadosOk() && metodo()) {
+      etapa2.hidden = false;
+      $('ck-hint').hidden = true;
+    }
+  }
+  form.addEventListener('input', verificarEtapa);
 
   function atualizarMetodo() {
+    atualizar();
     const cartao = metodo() === 'cartao';
     $('ck-cartao').hidden = !cartao;
     const sel = $('ck-cartao-parcelas'), atual = sel.value || '1';
@@ -1186,7 +1236,14 @@ const EXTRAS = [
   function rotuloBotao() {
     enviar.querySelector('.js-label').textContent = metodo() === 'cartao' ? `PAGAR ${brl(total())}` : 'GERAR PIX';
   }
-  form.querySelectorAll('input[name="metodo"]').forEach(r => r.addEventListener('change', atualizarMetodo));
+  form.querySelectorAll('input[name="metodo"]').forEach(r => r.addEventListener('change', () => {
+    atualizarMetodo();
+    verificarEtapa();
+    if (window.fbq && !pixelMetodo.has(metodo())) {
+      pixelMetodo.add(metodo());
+      fbq('track', 'AddPaymentInfo', { value: total() / 100, currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome, payment_type: metodo() });
+    }
+  }));
   lista.addEventListener('change', atualizarMetodo);
 
   // Máscaras do cartão
@@ -1238,10 +1295,10 @@ const EXTRAS = [
   function abrir(novoPlano) {
     plano = PLANOS[novoPlano] ? novoPlano : 'aee-completo';
     $('ck-plano').textContent = 'Central AEE — ' + PLANOS[plano].nome;
-    atualizar();
     atualizarMetodo();
     limparErros();
     etapa('form');
+    verificarEtapa();
     ultimoFoco = document.activeElement;
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1288,6 +1345,7 @@ const EXTRAS = [
     limparErros();
     const ids = selecionados().map(x => x.id);
     const forma = metodo();
+    if (!forma) { mostrarErros(null, 'Escolha a forma de pagamento.'); return; }
     // Um pedido por combinação de plano + extras + forma de pagamento:
     // reenviar sem mudar nada devolve a mesma cobrança (idempotência na
     // ZuckPay), então um clique duplo nunca cobra o cartão duas vezes.
@@ -1319,7 +1377,7 @@ const EXTRAS = [
     }
     carregando(true);
     try {
-      const resp = await fetch(API + (forma === 'cartao' ? '/cartao.php' : '/pix.php'), {
+      const resp = await fetch(API + (forma === 'cartao' ? '/cartao' : '/pix'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(corpo)
@@ -1335,7 +1393,7 @@ const EXTRAS = [
         return;
       }
       if (forma === 'cartao') resultadoCartao(dados);
-      else exibirPix(dados);
+      else { dados.metodo = 'pix'; exibirPix(dados); }
     } catch (_) {
       mostrarErros(null, 'Falha de conexão. Verifique sua internet e tente de novo.');
     } finally {
@@ -1363,7 +1421,13 @@ const EXTRAS = [
     etapa('pago');
     modal.querySelector('.dialog').scrollTop = 0;
     pedido = null;
-    if (window.fbq) fbq('track', 'Purchase', { value: Number(dados.valor), currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome });
+    if (window.fbq && dados.transactionId) {
+      fbq('track', 'Purchase', {
+        value: Number(dados.valor), currency: 'BRL', content_type: 'product',
+        content_name: 'Central AEE — ' + PLANOS[plano].nome,
+        content_ids: [plano, ...selecionados().map(e => e.id)]
+      }, { eventID: 'purchase-' + dados.transactionId });
+    }
   }
 
   function exibirPix(dados) {
@@ -1397,7 +1461,7 @@ const EXTRAS = [
   async function verificar(dados) {
     let proxima = 8;
     try {
-      const r = await fetch(`${API}/status.php?transactionId=${encodeURIComponent(dados.transactionId)}`);
+      const r = await fetch(`${API}/status?transactionId=${encodeURIComponent(dados.transactionId)}`);
       const s = await r.json();
       if (r.ok && s.pago) return confirmarPago(dados);
       if (r.ok && s.final) {
@@ -1442,7 +1506,7 @@ const EXTRAS = [
   async function popups() {
     let vendas = [];
     try {
-      const r = await fetch(`${API}/vendas-recentes.php?planos=${Object.keys(PLANOS).join(',')}`);
+      const r = await fetch(`${API}/vendas-recentes?planos=${Object.keys(PLANOS).join(',')}`);
       if (r.ok) vendas = (await r.json()).vendas || [];
     } catch (_) { /* sem API: mostra só os avisos */ }
     // Cada compra real aparece uma vez, intercalada com os avisos; depois

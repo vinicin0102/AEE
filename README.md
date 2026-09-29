@@ -1,235 +1,138 @@
 # Central AEE
 
 Página de vendas do **Central AEE**, o kit para o professor de Atendimento
-Educacional Especializado.
-
-Página estática (HTML + CSS + JS puro, sem framework) com checkout da
-**ZuckPay** feito em PHP: **PIX** e **cartão de crédito** nacional (BRL,
-parcelado). Requisitos: PHP 8+ com a extensão cURL.
+Educacional Especializado, hospedada na **Vercel**, com checkout da
+**ZuckPay**: PIX e cartão de crédito nacional (BRL, parcelado, 5% de
+desconto no cartão).
 
 ```
-index.html               página + modal de checkout PIX
-api/pix.php              cria a cobrança (plano + extras, preço calculado no servidor)
-api/cartao.php           cobra no cartão (card_raw, fluxo nacional BRL)
-api/status.php           consulta o pagamento (PIX e cartão)
-api/webhook.php          confirma o pagamento e registra plano + extras comprados
-api/vendas-recentes.php  compras reais recentes, para os pop-ups da página
-api/diagnostico.php      checagem da integração (protegido por token)
-api/_bootstrap.php       validação, CORS e chamada autenticada à API
-api/config.example.php   modelo de configuração
-tools/testar-webhook.php testa a validação de assinatura do webhook (CLI)
-img/                     depoimentos de clientes
-storage/                 log de pagamentos (não versionado)
+index.html                página + checkout (modal)
+img/                      depoimentos de clientes
+lib/config.js             planos, extras e preços (em centavos), desconto, parcelas
+lib/core.js               chamada à ZuckPay, validações, Redis, assinatura do webhook
+api/pix.js                POST /api/pix             cria a cobrança PIX
+api/cartao.js             POST /api/cartao          cobra no cartão (card_raw)
+api/status.js             GET  /api/status          situação do pagamento
+api/webhook.js            POST /api/webhook         confirmação da ZuckPay
+api/vendas-recentes.js    GET  /api/vendas-recentes compras reais para os pop-ups
+api/diagnostico.js        GET  /api/diagnostico     confere a configuração (com token)
 ```
+
+Sem dependências: as funções usam só o Node (20+) da Vercel.
 
 ## Planos
 
-**Básico R$ 12,90** (Documentação, Avaliações, Planejamento,
-Registros, Fichas de acompanhamento) e **Completo R$ 27,90** (tudo + Família e
-escola + Recursos pedagógicos). Os extras aparecem só dentro do checkout e
-valem para os dois planos.
+**Básico R$ 12,90** (Documentação, Avaliações, Planejamento, Registros,
+Fichas de acompanhamento) e **Completo R$ 27,90** (tudo + Família e escola +
+Recursos pedagógicos). No checkout, o comprador preenche os dados e escolhe
+PIX ou cartão; só então aparecem os extras (order bumps) e o botão de pagar.
 
-## Antes de publicar
+Preços, extras, desconto e parcelas ficam em `lib/config.js` (quem cobra é o
+servidor). O `index.html` só exibe: se mudar algo lá, mude também `PLANOS`,
+`EXTRAS`, `MAX_PARCELAS` e `DESCONTO_CARTAO` no fim do HTML e os textos dos
+cards de plano.
 
-1. **`api/config.php`** — `cp api/config.example.php api/config.php`,
-   preencha as credenciais (veja **Configuração** abaixo) e troque os
-   `product_id` pelos ids dos produtos no painel da ZuckPay.
-2. **Preços** — quem cobra é o servidor (`config.php`). O `index.html` só
-   exibe: se mudar um preço, mude no `config.php`, em `PLANOS` / `EXTRAS` no
-   fim do HTML e no texto dos cards de plano. O PIX mostra sempre o valor do
-   servidor.
-3. **FAQ** — preencha `entrega`, `formatos`, `acesso` e `programas` no bloco
-   `FAQ` do HTML. Vazio = texto genérico, que não promete nada específico.
-4. **Entrega** — o `TODO` em `api/webhook.php` é onde entra o envio do
-   material. O log de pagamentos já grava `plano` e `extras` de cada venda
-   (ex.: `"extras":["tea","pasta"]`), para saber o que entregar.
+## Variáveis de ambiente (Vercel → Settings → Environment Variables)
+
+| Variável | Obrigatória | Para quê |
+|---|---|---|
+| `CLIENT_ID`, `CLIENT_SECRET` | sim | Credenciais da API ZuckPay. |
+| `WEBHOOK_SECRET` | recomendada | *Integrações > Webhook Secret* no painel. Com ela, o webhook recusa POST que não venha da ZuckPay. |
+| `SITE_URL` | recomendada | Ex.: `https://seudominio.com.br`. Base da URL do webhook enviada em cada cobrança. |
+| `PRODUCT_ID_BASICO`, `PRODUCT_ID_COMPLETO` | opcional | Ids dos produtos no painel (vincula as vendas nos relatórios). |
+| `ZUCKPAY_API_BASE` | opcional | Padrão `https://www.zuckpay.com.br/conta/v3`. Troque para o host sem `www` se o diagnóstico acusar redirecionamento. |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | recomendada | Redis (Upstash). Criadas sozinhas ao conectar o banco (abaixo). |
+| `DEBUG_TOKEN` | opcional | Libera `/api/diagnostico?token=...`. Sem ela, responde 404. |
+| `DEBUG` | não em produção | `1` devolve o erro real da ZuckPay para a página. Desligue depois. |
+| `VENDAS_RECENTES` | opcional | `0` desliga os pop-ups de compras. |
+
+Depois de mudar variáveis, faça um **Redeploy**.
+
+### Redis (Upstash) — por que e como
+
+A Vercel não tem disco persistente. O Redis guarda:
+
+- as **compras reais** mostradas nos pop-ups;
+- o **limite de tentativas no cartão** por IP (anti *card testing*);
+- a **deduplicação do webhook** (a ZuckPay reenvia notificações);
+- o cache curto do status e os dados de cada pedido.
+
+Sem ele o site vende normalmente, mas os pop-ups mostram só os avisos do
+produto, o cartão fica sem limite de tentativas e o webhook pode processar a
+mesma venda mais de uma vez. Para ativar: **Vercel → Storage → Upstash for
+Redis (Marketplace) → Create**, conecte ao projeto `aee` e faça um Redeploy.
+O plano gratuito basta.
+
+## Conferir a configuração
+
+Com `DEBUG_TOKEN` definida, abra `https://SEU-SITE/api/diagnostico?token=SEU_TOKEN`.
+Ele mostra (com credenciais mascaradas) se a ZuckPay aceitou as credenciais,
+se há redirecionamento de host, se o cartão nacional está habilitado na conta,
+se o Redis responde e o que falta configurar. Não cria cobrança nenhuma.
+
+Os erros aparecem em **Vercel → Logs** com um código `ref` — o mesmo que a
+página mostra ao comprador.
 
 ## Cartão de crédito
 
-Fluxo **nacional** da ZuckPay (`POST /v3/card/charge` com `card_raw`), em até
-`max_parcelas` (padrão 3x; acima de 1x a operadora cobra juros do comprador).
-Configuração no `config.php`: `card_base`, `max_parcelas` e `limite_cartao`.
-Se mudar `max_parcelas`, mude também `MAX_PARCELAS` no fim do `index.html`.
+Fluxo nacional (`POST /v3/card/charge` com `card_raw`), até `MAX_PARCELAS`
+(padrão 3x; acima de 1x a operadora cobra juros do comprador), com 5% de
+desconto sobre o total.
 
-- **Aprovado** (`PAID`): a página mostra a confirmação na hora.
-- **Em análise** (`PENDING`): a página consulta o `status.php` até resolver.
-- **3D Secure** (`PENDING_3DS`): o comprador é levado ao banco; o resultado
-  chega pelo webhook.
-- **Recusado**: a página mostra o motivo do banco e oferece o PIX.
+- **Aprovado** (`PAID`): confirmação na hora.
+- **Em análise** (`PENDING`): a página consulta `/api/status` até resolver.
+- **3D Secure** (`PENDING_3DS`): o comprador vai ao banco; o resultado chega pelo webhook.
+- **Recusado**: mostra o motivo do banco e oferece o PIX.
 
-Segurança do cartão:
+Os dados do cartão passam pela função só para serem repassados à ZuckPay:
+nunca são gravados, registrados em log ou devolvidos, nem com `DEBUG=1`. O CVV
+é apagado do formulário após cada tentativa. O número passa por Luhn antes da
+API, e cada tentativa usa um `external_id_client` próprio (clique duplo não
+cobra duas vezes).
 
-- Os dados passam pelo servidor só para serem repassados à ZuckPay. **Nunca**
-  são gravados, registrados em log ou devolvidos, nem com `debug` ligado. O
-  CVV é apagado do formulário depois de cada tentativa.
-- **O site precisa estar em HTTPS.** Sem HTTPS o número do cartão trafega
-  aberto.
-- **Anti card testing:** no máximo `limite_cartao.tentativas` tentativas por IP
-  a cada `limite_cartao.janela` segundos (padrão 5 em 30 min). Robôs usam
-  formulários de cartão abertos para testar cartões roubados; o limite evita
-  isso e as taxas de recusa que viriam junto.
-- O número passa pelo algoritmo de Luhn antes de ir à API, e cada tentativa
-  usa um `external_id_client` próprio: um clique duplo não cobra duas vezes.
+## Webhook
+
+Cadastre `https://SEU-SITE/api/webhook` no painel da ZuckPay. Cada venda é
+confirmada em duas camadas: assinatura HMAC (`X-ZuckPay-Signature`, com
+`WEBHOOK_SECRET`, janela anti-replay de 5 min) e reconsulta do status na API —
+o corpo do POST nunca é a fonte da verdade.
+
+O `external_id_client` carrega plano, forma de pagamento e extras em códigos
+curtos (ex.: `AEE-cc-tf-<pedido>`), então o webhook sabe o que foi comprado
+mesmo sem Redis. Cada venda confirmada aparece nos logs como `[venda] {...}`.
+
+**Pendente — entrega do produto:** o `TODO` em `api/webhook.js` é onde entra o
+envio do material (e-mail com o link, liberação de acesso).
+
+**Proteção da Vercel:** o projeto está com *Vercel Authentication* nas
+deploys que não são de domínio próprio. Se o webhook receber 401 da Vercel,
+use um domínio próprio ou libere a proteção em *Settings → Deployment
+Protection*.
+
+## Meta Pixel
+
+Pixel `1082049094820977` no `<head>`. Eventos: `PageView`, `ViewContent`,
+`InitiateCheckout` (abrir o checkout), `AddPaymentInfo` (escolher PIX ou
+cartão), `Purchase` (pagamento confirmado, com `eventID` `purchase-<transactionId>`
+para deduplicar com a API de Conversões, se for usada no futuro). Os dados de
+UTM e os cookies `_fbc`/`_fbp` também vão para a ZuckPay em cada cobrança.
 
 ## Pop-ups de compras
 
-Alternam compras reais com avisos verdadeiros sobre o produto (acesso após
-o PIX, modelos editáveis, garantia, complementos). As compras vêm só de vendas
-reais: `api/vendas-recentes.php` lê o log de pagamentos
-confirmados pelo webhook e devolve primeiro nome, plano e há quanto tempo
-e forma de pagamento — "comprou o Plano Completo · há 3 min · via PIX"
-(últimos 7 dias, até 10). Cada venda aparece uma vez por visita; sem vendas,
-não aparece pop-up nenhum. E-mail, CPF, telefone e valor nunca saem do
-servidor. Para desligar: `'vendas_recentes' => false` no `config.php`.
-
-Não use nomes ou horários inventados: pop-up de compra falsa é propaganda
-enganosa (CDC, art. 37).
-
-## Como os extras funcionam
-
-O comprador escolhe o plano e marca os extras dentro do checkout; o total é
-atualizado ali. Ao gerar o PIX, o navegador envia só
-os ids (`["tea","pasta"]`). O `pix.php` recusa id desconhecido, soma os
-valores do `config.php` e gera **um único PIX** com tudo. A descrição da
-cobrança fica, por exemplo, "Central AEE + Kit Professor TEA + Pasta do Aluno".
+Alternam compras **reais**, confirmadas pelo webhook ("Maria comprou o Plano
+Básico · há 3 min · via PIX"; últimos 7 dias, até 10), com avisos verdadeiros
+sobre o produto. Só sai o primeiro nome: e-mail, CPF, telefone e valor nunca
+deixam o servidor. Não use nomes ou horários inventados: notificação de compra
+falsa é propaganda enganosa (CDC, art. 37).
 
 ## Pendências de conteúdo (marcadas com `TROCAR` no HTML)
 
-1. **Prévias da seção "Veja o que você recebe"**: são páginas de exemplo em
-   HTML (avaliação, acompanhamento, planejamento, registro, relatório e
-   observação), legíveis e ampliáveis. Troque pelas capturas reais das páginas
-   entregues e remova a legenda "Prévias ilustrativas".
+1. **Prévias da seção "Veja o que você recebe"**: páginas de exemplo em HTML.
+   Troque pelas capturas reais das páginas entregues e remova a legenda
+   "Prévias ilustrativas".
 2. **Quantidade de materiais**: a página diz "Dezenas de materiais". Só troque
-   por um número (ex.: "+100") quando o conteúdo final tiver essa quantidade.
+   por um número quando o conteúdo final tiver essa quantidade.
 3. **Links do rodapé**: Termos de Uso, Política de Privacidade e Contato
    apontam para `#`.
-4. **Pixel/UTM**: há um comentário no `<head>` para os scripts deste
-   produto. O checkout (PIX e cartão) já dispara `InitiateCheckout` e `Purchase` se o pixel
-   (`fbq`) estiver carregado, e repassa UTMs e cookies `_fbc`/`_fbp` à ZuckPay.
 
-Os depoimentos publicados são de clientes reais, com autorização. Não há
-número de compradores, avaliações agregadas nem contagem regressiva: nada
-disso deve ser adicionado sem dados reais.
-
-## Configuração
-
-```bash
-cp api/config.example.php api/config.php
-```
-
-Preencha `client_id`, `client_secret`, `webhook_url`, `webhook_secret` e
-`allowed_origins`. O **Webhook Secret** é gerado no painel em
-*Integrações > Webhook Secret* e é diferente do Client Secret; sem ele os
-postbacks chegam sem assinatura e só resta a verificação por reconsulta.
-
-O `api_base` precisa usar **exatamente o host da sua tela de Credenciais API**
-(com ou sem `www`). Com o host errado a ZuckPay responde um redirecionamento,
-e um POST autenticado não é reenviado no redirect — a cobrança nunca chega.
-Este é o motivo mais comum de "o PIX não gera".
-`api/config.php` está no `.gitignore` — **nunca** versione esse arquivo.
-Em produção prefira variáveis de ambiente (`ZUCKPAY_CLIENT_ID` /
-`ZUCKPAY_CLIENT_SECRET`), que o `config.example.php` já lê.
-
-Requisitos: PHP 8+ com a extensão cURL. O front chama `/api`; se a pasta não
-ficar na raiz do site, ajuste a constante `API` no fim do `index.html`.
-
-## Como funciona
-
-1. O visitante clica em um dos planos e preenche nome, CPF, e-mail e telefone.
-2. `api/pix.php` valida os dados e chama `POST /conta/v3/pix/qrcode`.
-3. A página mostra o QR Code e o copia-e-cola, e consulta `api/status.php`
-   a cada 4s até o pagamento ser confirmado.
-4. A ZuckPay chama `api/webhook.php`, que confirma o pagamento e registra a venda.
-
-Planos e extras: veja **Planos** acima. Preços e `product_id` ficam no
-`config.php`.
-
-## Conferir o webhook
-
-Depois de configurar o `webhook_secret`, rode **no servidor**:
-
-```bash
-php tools/testar-webhook.php
-```
-
-Ele monta POSTs assinados como a ZuckPay faz e confere que o endpoint aceita
-o legítimo e recusa assinatura falsa, replay e requisição sem header:
-
-```
-[ok]   assinatura válida        (esperado: 200) -> HTTP 200
-[ok]   assinatura falsa         (esperado: 401) -> HTTP 401
-[ok]   replay de 10 minutos     (esperado: 401) -> HTTP 401
-[ok]   sem header de assinatura (esperado: 401) -> HTTP 401
-```
-
-O segredo é lido do `config.php`; nunca passe por argumento, porque a linha de
-comando fica visível para outros processos e no histórico do shell.
-
-## Se o PIX não gerar
-
-1. Defina um `debug_token` no `config.php` e abra:
-   `https://seu-dominio.com.br/api/diagnostico.php?token=SEU_TOKEN`
-
-   Ele confere PHP, cURL, credenciais (mascaradas), planos e faz uma cobrança
-   de teste de R$ 1,00, mostrando a resposta real da ZuckPay. Os diagnósticos
-   possíveis:
-
-   | Resultado | Causa provável |
-   |---|---|
-   | `REDIRECIONAMENTO` | `api_base` com o host errado (`www` sobrando ou faltando). O diagnóstico mostra o endereço certo em `va_para` e testa a variante em `alternativa`. |
-   | `IP BLOQUEADO` | Credenciais válidas, mas o IP do servidor não está na IP Whitelist da ZuckPay. O diagnóstico mostra o IP a liberar. |
-   | `RATE LIMIT` | 5 tentativas por 30 minutos. Aguarde. |
-   | `FALHA DE CONEXAO` | A hospedagem bloqueia conexões de saída, ou DNS. |
-   | `NAO AUTORIZADO` | `client_id`/`client_secret` errados, revogados ou sem permissão para PIX. |
-   | `ENDPOINT NAO ENCONTRADO` | `api_base` incorreto. |
-   | `OK` | A integração funciona — o problema está no front ou no caminho `/api`. |
-
-2. Se der `OK` no diagnóstico mas o botão da página continuar falhando, o
-   problema é o caminho: abra o console do navegador (F12) e veja se o
-   `POST /api/pix.php` retorna 404. Nesse caso a pasta `api/` não está onde o
-   front espera — ajuste a constante `API` no fim do `index.html`.
-
-3. Ligue `'debug' => true` no `config.php` para que a página mostre o motivo
-   real da falha em vez da mensagem genérica. **Desligue depois**, junto com o
-   `debug_token`.
-
-## Decisões de segurança
-
-Estas escolhas são deliberadas — mudá-las abre brecha real:
-
-- **O `client_secret` nunca vai para o navegador.** A documentação da ZuckPay
-  mostra um exemplo em JavaScript com `btoa(clientId + ':' + clientSecret)`
-  rodando no front. Seguir aquele exemplo publica a credencial no código-fonte
-  da página: qualquer visitante poderia criar cobranças, listar transações e
-  consultar o saldo da conta. Por isso a chamada é feita em PHP, no servidor.
-- **O preço é definido no servidor.** `api/pix.php` recebe só o *id* do plano
-  (`aee-basico` / `aee-completo`) e os ids dos extras e busca o valor na constante `PLANOS`. Um `valor`
-  enviado pelo navegador é ignorado — sem isso, bastaria editar a requisição
-  para comprar o Completo por R$ 0,01.
-- **As respostas são filtradas.** A API devolve `amount_liquid`, e-mail do
-  comprador e outros campos internos; os endpoints repassam apenas o necessário.
-- **O webhook é verificado em duas camadas.** Primeiro a assinatura HMAC do
-  header `X-ZuckPay-Signature` (`HMAC-SHA256("<timestamp>.<corpo_raw>",
-  webhook_secret)`), com janela anti-replay de 5 minutos — prova que o POST
-  veio da ZuckPay. Depois o `transactionId` é reconsultado na API — prova que
-  o pagamento está pago agora. O corpo do POST nunca é a fonte da verdade, então
-  um `"status":"PAID"` forjado não libera nada.
-- **Entradas são validadas**: CPF com dígito verificador, e-mail, telefone e
-  limite de tamanho. Parâmetros de atribuição passam por whitelist.
-- **A entrega roda uma vez só.** A ZuckPay reenvia notificações. Antes de
-  entregar, `webhook.php` cria um arquivo-marcador com `fopen(..., 'x')`, que
-  falha se já existir — duas notificações simultâneas não passam as duas.
-- **Cobranças não duplicam.** Cada abertura do checkout gera um `pedido`, usado
-  como `external_id_client`. Clicar duas vezes devolve a mesma cobrança em vez
-  de criar outra.
-
-## Rate limit
-
-A ZuckPay responde **429 após 5 tentativas em 30 minutos**. Por isso:
-
-- `status.php` guarda a última consulta por 8 segundos, então várias abas ou
-  recarregamentos não geram chamadas repetidas.
-- Quando a API devolve 429, a resposta pede à página para esperar 30s em vez
-  dos 5s normais; o front respeita esse intervalo.
-- `webhook.php` responde na hora a `payment_refused`, `payment_pending` e
-  `checkout_abandoned`, sem gastar uma chamada de verificação.
+Os depoimentos publicados são de clientes reais, com autorização.
