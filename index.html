@@ -105,6 +105,10 @@ section{padding:64px 0;position:relative;overflow-x:clip}
 .checks .ico{width:18px;height:18px;color:var(--green);stroke-width:2.6}
 
 /* Faixa superior */
+.oferta-bar{position:sticky;top:0;z-index:70;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;background:linear-gradient(180deg,#C0392B,#A93226);color:#fff;font-weight:800;font-size:14px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.oferta-bar .relogio{background:rgba(80,10,5,.45);border-radius:8px;padding:4px 12px;font-size:17px;font-variant-numeric:tabular-nums;letter-spacing:.04em;min-width:72px;text-align:center}
+.oferta-bar.encerrada{background:#4A3B3B}
+.price .de{display:block;color:var(--muted);font-weight:600;font-size:15px;text-decoration:line-through;margin-bottom:4px}
 .topbar{background:var(--navy);color:#fff;text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.08em;padding:10px 16px}
 
 /* HERO */
@@ -510,6 +514,8 @@ body{padding-bottom:80px}
   </defs>
 </svg>
 
+<!-- Oferta por tempo limitado: prazo real, assinado e conferido pelo servidor (api/oferta.js) -->
+<div class="oferta-bar" id="oferta-bar" role="status" hidden><span id="oferta-txt">⚠️ Oferta por tempo limitado:</span><span class="relogio" id="oferta-relogio">15:00</span></div>
 <div class="topbar">📚 MATERIAL PARA PROFESSORES DE AEE</div>
 <div class="rainbow" aria-hidden="true"></div>
 
@@ -867,7 +873,8 @@ body{padding-bottom:80px}
           <li class="t- off"><span class="ok"><svg class="ico"><use href="#i-x"/></svg></span>Recursos pedagógicos</li>
           </ul>
           <div class="price">
-            <div class="value"><sup>R$</sup>12,90</div>
+            <span class="de" data-de="aee-basico" hidden></span>
+            <div class="value" data-preco="aee-basico"><sup>R$</sup>12,90</div>
             <span class="once">pagamento único</span>
           </div>
           <button type="button" class="btn btn-outline btn-block js-comprar" data-plano="aee-basico">QUERO O PLANO BÁSICO</button>
@@ -889,7 +896,8 @@ body{padding-bottom:80px}
           <li class="t-purple"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Acesso digital</li>
           </ul>
           <div class="price">
-            <div class="value"><sup>R$</sup>27,90</div>
+            <span class="de" data-de="aee-completo" hidden></span>
+            <div class="value" data-preco="aee-completo"><sup>R$</sup>27,90</div>
             <span class="once">pagamento único</span>
             <span class="pix js-cartao" hidden><svg class="ico" style="width:14px;height:14px"><use href="#i-card"/></svg>5% OFF no cartão</span>
           </div>
@@ -994,7 +1002,7 @@ body{padding-bottom:80px}
 
 <!-- Barra fixa (mobile) -->
 <div class="sticky" id="sticky">
-  <div class="sticky-info"><strong>CENTRAL AEE</strong><span><small>a partir de</small> R$ 12,90</span></div>
+  <div class="sticky-info"><strong>CENTRAL AEE</strong><span><small>a partir de</small> <b id="sticky-preco" style="font-weight:800">R$ 12,90</b></span></div>
   <a href="#oferta" class="btn btn-primary">QUERO ACESSAR</a>
 </div>
 
@@ -1131,8 +1139,8 @@ const API = '/api';
 // Planos: ids iguais aos de lib/config.js. O preço cobrado é sempre o do
 // servidor; estes valores (em centavos) servem só para exibição.
 const PLANOS = {
-  'aee-basico':   { nome: 'Plano Básico',   preco: 1290 },
-  'aee-completo': { nome: 'Plano Completo', preco: 2790 }
+  'aee-basico':   { nome: 'Plano Básico',   preco: 1290, oferta: 1290 },
+  'aee-completo': { nome: 'Plano Completo', preco: 2790, oferta: 2790 }
 };
 
 // Cartão: parcelas e desconto iguais aos de lib/config.js (lá é que vale).
@@ -1391,6 +1399,7 @@ const EXTRAS = [
     }
     const corpo = {
       plano:    plano,
+      oferta:   ofertaToken,
       extras:   ids,
       pedido:   pedido,
       nome:     $('ck-nome').value,
@@ -1635,6 +1644,54 @@ const EXTRAS = [
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) fecharLb(); });
 
   popups();
+
+  /* ---------- oferta por tempo limitado (15 min, conferida no servidor) ---------- */
+  // O prazo vem assinado de /api/oferta e fica salvo no navegador: recarregar
+  // não reinicia. O servidor cobra o preço de oferta só dentro do prazo.
+  let ofertaToken = '';
+  function aplicarPrecos(emOferta, normal) {
+    Object.keys(PLANOS).forEach(id => {
+      const n = normal[id] ?? PLANOS[id].oferta;
+      PLANOS[id].preco = emOferta ? PLANOS[id].oferta : n;
+      const v = document.querySelector(`[data-preco="${id}"]`);
+      if (v) v.innerHTML = '<sup>R$</sup>' + (PLANOS[id].preco / 100).toFixed(2).replace('.', ',');
+      const de = document.querySelector(`[data-de="${id}"]`);
+      if (de) { de.hidden = !emOferta || n <= PLANOS[id].oferta; de.textContent = 'de ' + brl(n); }
+    });
+    $('sticky-preco').textContent = brl(Math.min(...Object.values(PLANOS).map(p => p.preco)));
+    atualizarMetodo();
+  }
+  async function iniciarOferta() {
+    let salvo = '';
+    try { salvo = localStorage.getItem('aee_oferta') || ''; } catch (_) {}
+    let d;
+    try {
+      const r = await fetch(`${API}/oferta?token=${encodeURIComponent(salvo)}`);
+      d = r.ok ? await r.json() : null;
+    } catch (_) { d = null; }
+    if (!d || !d.token) return; // sem servidor não há prazo: nada de cronômetro
+    ofertaToken = d.token;
+    try { localStorage.setItem('aee_oferta', d.token); } catch (_) {}
+    const diferenca = d.agora - Date.now(); // acerta o relógio do aparelho
+    const bar = $('oferta-bar'), relogio = $('oferta-relogio');
+    const encerrar = () => {
+      bar.classList.add('encerrada');
+      $('oferta-txt').textContent = 'Oferta encerrada — valem os preços normais.';
+      relogio.hidden = true;
+      aplicarPrecos(false, d.normal);
+    };
+    if (d.fim - (Date.now() + diferenca) <= 0) { bar.hidden = false; encerrar(); return; }
+    aplicarPrecos(true, d.normal);
+    bar.hidden = false;
+    const tick = () => {
+      const resta = Math.max(0, Math.floor((d.fim - (Date.now() + diferenca)) / 1000));
+      relogio.textContent = `${String(Math.floor(resta / 60)).padStart(2, '0')}:${String(resta % 60).padStart(2, '0')}`;
+      if (resta <= 0) { clearInterval(timer); encerrar(); }
+    };
+    const timer = setInterval(tick, 1000);
+    tick();
+  }
+  iniciarOferta();
 
   /* ---------- formas de pagamento disponíveis ---------- */
   // O cartão (e o "5% OFF") só aparece quando a ZuckPay confirma que está

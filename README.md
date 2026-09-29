@@ -32,6 +32,22 @@ servidor). O `index.html` só exibe: se mudar algo lá, mude também `PLANOS`,
 `EXTRAS`, `MAX_PARCELAS` e `DESCONTO_CARTAO` no fim do HTML e os textos dos
 cards de plano.
 
+## Oferta por tempo limitado (15 min)
+
+Faixa vermelha no topo com cronômetro de `OFERTA_MINUTOS` (15) contado da
+primeira visita. É real: `/api/oferta` entrega um prazo **assinado** pelo
+servidor, salvo no navegador (recarregar não reinicia), e a cobrança
+(`precoPlano` em `lib/core.js`) confere esse prazo:
+
+- dentro do prazo: preço de oferta (`centavos` em `lib/config.js`: Básico
+  R$ 12,90, Completo R$ 27,90), com o preço normal riscado nos cards;
+- depois do prazo, sem prazo ou com prazo adulterado: preço normal (`normal`:
+  Básico R$ 19,90, Completo R$ 37,90). A faixa passa a dizer "Oferta
+  encerrada" e os cards mostram o preço normal.
+
+Para mudar o prazo ou os preços, edite `lib/config.js` e os valores iniciais
+em `PLANOS` no fim do `index.html`.
+
 ## Variáveis de ambiente (Vercel → Settings → Environment Variables)
 
 | Variável | Obrigatória | Para quê |
