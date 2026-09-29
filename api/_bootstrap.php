@@ -80,11 +80,13 @@ function cpfValido(string $cpf): bool
  * costuma ser descartado no caminho. Em vez disso devolvemos o Location para
  * que o api_base seja corrigido.
  *
+ * $base troca a URL base (ex.: a do cartão); sem ela, usa api_base (PIX).
+ *
  * @return array{0:int,1:array,2:string} [status http, corpo decodificado, destino do redirect]
  */
-function chamarZuckpay(array $config, string $metodo, string $caminho, ?array $payload = null): array
+function chamarZuckpay(array $config, string $metodo, string $caminho, ?array $payload = null, ?string $base = null): array
 {
-    $url = rtrim($config['api_base'], '/') . $caminho;
+    $url = rtrim($base ?? $config['api_base'], '/') . $caminho;
     $autorizacao = 'Basic ' . base64_encode($config['client_id'] . ':' . $config['client_secret']);
 
     $cabecalhos = ['Accept: application/json', 'Authorization: ' . $autorizacao];
@@ -272,4 +274,170 @@ function registrarPagamento(array $config, array $dados): void
         json_encode($dados, JSON_UNESCAPED_UNICODE) . PHP_EOL,
         FILE_APPEND | LOCK_EX
     );
+}
+
+/** Base da API de cartão: card_base do config, ou derivada do api_base (/pix -> /card). */
+function baseCartao(array $config): string
+{
+    return (string) ($config['card_base'] ?? preg_replace('#/pix/?$#', '/card', (string) $config['api_base']));
+}
+
+/**
+ * Valida plano, extras e dados do comprador e calcula o valor no servidor.
+ * Usado por pix.php e cartao.php; responde 400/422 e encerra se algo não bate.
+ *
+ * O preço vem SEMPRE do config.php. Um valor enviado pelo navegador é
+ * ignorado: se fosse aceito, bastaria editar o request para pagar R$ 0,01.
+ *
+ * @return array{planoId:string,plano:array,extras:array,itens:array,valor:float,
+ *               nome:string,cpf:string,email:string,telefone:string,pedido:string,
+ *               payload:array}
+ */
+function montarPedido(array $config, array $corpo): array
+{
+    $planos = is_array($config['planos'] ?? null) ? $config['planos'] : [];
+
+    $planoId = is_string($corpo['plano'] ?? null) ? $corpo['plano'] : '';
+    if (!isset($planos[$planoId])) {
+        responder(400, ['erro' => 'Plano inválido.']);
+    }
+    $plano = $planos[$planoId];
+
+    // Extras (order bumps): só ids. Id desconhecido ou de outro plano é recusado.
+    $extrasDisponiveis = is_array($plano['extras'] ?? null) ? $plano['extras'] : [];
+    $extrasPedidos = $corpo['extras'] ?? [];
+    if (!is_array($extrasPedidos) || count($extrasPedidos) > count($extrasDisponiveis)) {
+        responder(400, ['erro' => 'Extras inválidos.']);
+    }
+    $extras = [];
+    foreach ($extrasPedidos as $extraId) {
+        if (!is_string($extraId) || !isset($extrasDisponiveis[$extraId])) {
+            responder(400, ['erro' => 'Extras inválidos.']);
+        }
+        $extras[$extraId] = $extrasDisponiveis[$extraId];
+    }
+
+    $valor = (float) $plano['valor'];
+    $itens = [$plano['nome']];
+    foreach ($extras as $extra) {
+        $valor += (float) $extra['valor'];
+        $itens[] = $extra['nome'];
+    }
+    $valor = round($valor, 2);
+
+    $nome     = trim((string) ($corpo['nome'] ?? ''));
+    $cpf      = preg_replace('/\D/', '', (string) ($corpo['cpf'] ?? '')) ?? '';
+    $email    = trim((string) ($corpo['email'] ?? ''));
+    $telefone = preg_replace('/\D/', '', (string) ($corpo['telefone'] ?? '')) ?? '';
+
+    $erros = [];
+    if (mb_strlen($nome) < 3 || mb_strlen($nome) > 100) {
+        $erros['nome'] = 'Informe seu nome completo.';
+    }
+    if (!cpfValido($cpf)) {
+        $erros['cpf'] = 'CPF inválido.';
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) {
+        $erros['email'] = 'E-mail inválido.';
+    }
+    if (strlen($telefone) < 10 || strlen($telefone) > 11) {
+        $erros['telefone'] = 'Telefone inválido. Use DDD + número.';
+    }
+    if ($erros !== []) {
+        responder(422, ['erro' => 'Dados inválidos.', 'campos' => $erros]);
+    }
+
+    /*
+     * Idempotência: o navegador manda o mesmo "pedido" se o comprador clicar
+     * duas vezes ou recarregar. Com external_id_client repetido, a ZuckPay
+     * devolve a cobrança existente em vez de criar (ou cobrar) outra.
+     */
+    $pedido = preg_replace('/[^A-Za-z0-9-]/', '', (string) ($corpo['pedido'] ?? '')) ?? '';
+    if (strlen($pedido) < 8 || strlen($pedido) > 60) {
+        $pedido = bin2hex(random_bytes(12));
+    }
+
+    $payload = [
+        'nome'      => $nome,
+        'cpf'       => $cpf,
+        'valor'     => $valor,
+        'email'     => $email,
+        'telefone'  => $telefone,
+        'urlnoty'   => $config['webhook_url'],
+        'descricao' => mb_substr(implode(' + ', $itens), 0, 250),
+    ];
+
+    // Vincula a venda ao produto cadastrado no painel (opcional na API).
+    if (!empty($plano['product_id'])) {
+        $payload['product_id'] = (int) $plano['product_id'];
+    }
+
+    $rastreio = is_array($corpo['rastreio'] ?? null) ? $corpo['rastreio'] : [];
+    $permitidos = [
+        'utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term',
+        'fbc', 'fbp', 'fbclid', 'gclid', 'ttclid', 'wbraid', 'gbraid',
+        'kclid', 'click_id', 'src', 'sck',
+    ];
+    foreach ($permitidos as $chave) {
+        $v = $rastreio[$chave] ?? null;
+        if (is_string($v) && $v !== '') {
+            $payload[$chave] = mb_substr($v, 0, 255);
+        }
+    }
+
+    return compact('planoId', 'plano', 'extras', 'itens', 'valor', 'nome', 'cpf', 'email', 'telefone', 'pedido', 'payload');
+}
+
+/**
+ * Limite de tentativas por IP numa janela de tempo (arquivo em storage/).
+ * Devolve false quando o limite estourou. Protege o cartão contra "card
+ * testing": robôs que usam o formulário para testar cartões roubados.
+ */
+function dentroDoLimite(array $config, string $acao, int $maximo, int $janelaSegundos): bool
+{
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+    $arquivo = diretorioEstado($config) . '/limite-' . $acao . '-' . sha1($ip) . '.json';
+
+    $handle = @fopen($arquivo, 'c+');
+    if ($handle === false) {
+        return true; // sem storage não bloqueia a venda; o erro fica no log do PHP
+    }
+    flock($handle, LOCK_EX);
+    $tentativas = json_decode((string) stream_get_contents($handle), true);
+    $agora = time();
+    $tentativas = array_values(array_filter(
+        is_array($tentativas) ? $tentativas : [],
+        fn ($t) => is_int($t) && $t > $agora - $janelaSegundos
+    ));
+
+    $permitido = count($tentativas) < $maximo;
+    if ($permitido) {
+        $tentativas[] = $agora;
+    }
+    ftruncate($handle, 0);
+    rewind($handle);
+    fwrite($handle, json_encode($tentativas));
+    flock($handle, LOCK_UN);
+    fclose($handle);
+
+    return $permitido;
+}
+
+/** Algoritmo de Luhn: descarta número de cartão digitado errado antes de ir à API. */
+function luhnValido(string $numero): bool
+{
+    $soma = 0;
+    $dobrar = false;
+    for ($i = strlen($numero) - 1; $i >= 0; $i--) {
+        $d = (int) $numero[$i];
+        if ($dobrar) {
+            $d *= 2;
+            if ($d > 9) {
+                $d -= 9;
+            }
+        }
+        $soma += $d;
+        $dobrar = !$dobrar;
+    }
+    return $soma % 10 === 0;
 }

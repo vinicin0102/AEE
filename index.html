@@ -371,6 +371,16 @@ body{padding-bottom:80px}
 .err:empty{display:none}
 .alert{background:var(--red-50);color:#A1262B;border:1px solid #F5C2C4;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px}
 .alert:empty{display:none}
+.pay-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.pay-tabs label{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border:2px solid #D5DBEA;border-radius:12px;font-weight:800;color:var(--navy);cursor:pointer;font-size:15px;transition:border-color .15s,background .15s}
+.pay-tabs input{position:absolute;opacity:0;pointer-events:none}
+.pay-tabs label:has(input:checked){border-color:var(--blue);background:var(--blue-50)}
+.pay-tabs label:has(input:focus-visible){outline:3px solid var(--blue-50);outline-offset:2px}
+.pay-tabs .ico{width:20px;height:20px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-g select{width:100%;font:inherit;font-size:16px;padding:13px 12px;border:1.5px solid #D5DBEA;border-radius:12px;background:#fff;color:var(--ink)}
+.secure{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:-4px 0 12px}
+.secure .ico{width:14px;height:14px;color:var(--green)}
 .fineprint{font-size:11.5px;color:#8A91AE;text-align:center;margin-top:12px;line-height:1.5}
 .spin{width:20px;height:20px;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;display:none}
 .loading .spin{display:inline-block}
@@ -458,6 +468,7 @@ body{padding-bottom:80px}
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
     <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
     <!-- Peça de quebra-cabeça preenchida, usada como decoração -->
     <symbol id="pz" viewBox="0 0 100 100"><path d="M20 22h18a12 12 0 1 1 24 0h18v18a12 12 0 1 1 0 24v18H62a12 12 0 1 0-24 0H20V64a12 12 0 1 0 0-24z" fill="currentColor"/></symbol>
@@ -837,7 +848,7 @@ body{padding-bottom:80px}
           <div class="price">
             <div class="value"><sup>R$</sup>27,90</div>
             <span class="once">pagamento único</span>
-            <span class="pix"><svg class="ico" style="width:14px;height:14px"><use href="#i-bolt"/></svg>Pagamento via PIX</span>
+            <span class="pix"><svg class="ico" style="width:14px;height:14px"><use href="#i-bolt"/></svg>PIX ou cartão</span>
           </div>
           <button type="button" class="btn btn-primary btn-block js-comprar" data-plano="aee-completo"><svg class="ico"><use href="#i-cart"/></svg>QUERO O PLANO COMPLETO</button>
         </div>
@@ -893,7 +904,7 @@ body{padding-bottom:80px}
       </details>
       <details class="t-green">
         <summary>É pagamento único?<svg class="ico"><use href="#i-plus"/></svg></summary>
-        <div class="ans">Sim. O pagamento é feito uma única vez, via PIX, sem mensalidade. Os complementos opcionais, se escolhidos no checkout, entram no mesmo PIX.</div>
+        <div class="ans">Sim. O pagamento é feito uma única vez, sem mensalidade, via PIX ou cartão de crédito (à vista ou parcelado). Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.</div>
       </details>
       <details class="t-teal">
         <summary>Tenho acesso por quanto tempo?<svg class="ico"><use href="#i-plus"/></svg></summary>
@@ -992,8 +1003,45 @@ body{padding-bottom:80px}
       </div>
       <div class="dlg-sec" style="margin-top:22px;padding-top:18px;border-top:1px dashed var(--line)">
         <p class="bumps-title">Quer deixar sua Central AEE ainda mais completa?</p>
-        <p class="bumps-sub">Complementos opcionais. Cada um é um produto independente e entra no mesmo PIX.</p>
+        <p class="bumps-sub">Complementos opcionais. Cada um é um produto independente e entra no mesmo pagamento.</p>
         <div class="bumps" id="bumps"><!-- preenchido pelo script a partir de EXTRAS --></div>
+      </div>
+      <div class="dlg-sec" style="padding-top:18px;border-top:1px dashed var(--line)">
+        <p class="bumps-title" style="margin-bottom:10px">Forma de pagamento</p>
+        <div class="pay-tabs" role="radiogroup" aria-label="Forma de pagamento">
+          <label><input type="radio" name="metodo" value="pix" checked><svg class="ico"><use href="#i-bolt"/></svg>PIX</label>
+          <label><input type="radio" name="metodo" value="cartao"><svg class="ico"><use href="#i-card"/></svg>Cartão</label>
+        </div>
+        <div id="ck-cartao" hidden>
+          <p class="secure"><svg class="ico"><use href="#i-lock"/></svg>Os dados do cartão vão direto para a ZuckPay e não ficam salvos.</p>
+          <div class="field-g">
+            <label for="ck-cartao-numero">Número do cartão</label>
+            <input id="ck-cartao-numero" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000">
+            <p class="err" data-erro="cartao-numero"></p>
+          </div>
+          <div class="field-g">
+            <label for="ck-cartao-titular">Nome impresso no cartão</label>
+            <input id="ck-cartao-titular" type="text" autocomplete="cc-name" style="text-transform:uppercase">
+            <p class="err" data-erro="cartao-titular"></p>
+          </div>
+          <div class="row2">
+            <div class="field-g">
+              <label for="ck-cartao-validade">Validade</label>
+              <input id="ck-cartao-validade" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA">
+              <p class="err" data-erro="cartao-validade"></p>
+            </div>
+            <div class="field-g">
+              <label for="ck-cartao-cvv">CVV</label>
+              <input id="ck-cartao-cvv" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123">
+              <p class="err" data-erro="cartao-cvv"></p>
+            </div>
+          </div>
+          <div class="field-g">
+            <label for="ck-cartao-parcelas">Parcelas</label>
+            <select id="ck-cartao-parcelas"></select>
+            <p class="err" data-erro="cartao-parcelas"></p>
+          </div>
+        </div>
       </div>
       <div class="dlg-items" id="ck-itens"></div>
       <button type="submit" class="btn btn-primary btn-block" id="ck-enviar"><span class="spin"></span><span class="js-label">GERAR PIX</span></button>
@@ -1009,6 +1057,12 @@ body{padding-bottom:80px}
       <button type="button" class="btn btn-dark btn-block" id="ck-copiar"><svg class="ico"><use href="#i-copy"/></svg><span>COPIAR CÓDIGO</span></button>
       <div class="waiting"><span class="spin"></span>Aguardando pagamento… <span id="ck-timer" style="font-variant-numeric:tabular-nums;color:var(--navy)"></span></div>
       <p class="fineprint">A confirmação é automática. Pode deixar esta página aberta.</p>
+    </div>
+
+    <!-- Etapa 2b: cartão em análise -->
+    <div class="dlg-body pix-step" id="ck-proc" hidden>
+      <div class="waiting" style="margin-top:6px"><span class="spin"></span>Processando o pagamento no cartão…</div>
+      <p class="fineprint">A operadora está analisando. A confirmação é automática; pode deixar esta página aberta.</p>
     </div>
 
     <!-- Etapa 3: pago -->
@@ -1034,6 +1088,9 @@ const PLANOS = {
   'aee-basico':   { nome: 'Plano Básico',   preco: 1290 },
   'aee-completo': { nome: 'Plano Completo', preco: 2790 }
 };
+
+// Parcelas oferecidas no cartão: o mesmo max_parcelas de api/config.php.
+const MAX_PARCELAS = 3;
 
 // Respostas do FAQ que dependem do produto real. Deixe vazio ('') para
 // exibir o texto genérico, que não promete nada que possa não existir.
@@ -1112,9 +1169,39 @@ const EXTRAS = [
   }
   lista.addEventListener('change', atualizar);
 
-  /* ---------- checkout PIX (ZuckPay) ---------- */
+  /* ---------- checkout PIX e cartão (ZuckPay) ---------- */
   const modal = $('checkout'), form = $('ck-form'), enviar = $('ck-enviar');
   let pedido = null, pedidoChave = '', poll = null, contagem = null, ultimoFoco = null;
+  const metodo = () => form.querySelector('input[name="metodo"]:checked').value;
+
+  function atualizarMetodo() {
+    const cartao = metodo() === 'cartao';
+    $('ck-cartao').hidden = !cartao;
+    const sel = $('ck-cartao-parcelas'), atual = sel.value || '1';
+    sel.innerHTML = Array.from({ length: MAX_PARCELAS }, (_, i) => i + 1).map(n =>
+      `<option value="${n}">${n === 1 ? `1x de ${brl(total())} (à vista)` : `${n}x (com juros da operadora)`}</option>`).join('');
+    sel.value = atual;
+    rotuloBotao();
+  }
+  function rotuloBotao() {
+    enviar.querySelector('.js-label').textContent = metodo() === 'cartao' ? `PAGAR ${brl(total())}` : 'GERAR PIX';
+  }
+  form.querySelectorAll('input[name="metodo"]').forEach(r => r.addEventListener('change', atualizarMetodo));
+  lista.addEventListener('change', atualizarMetodo);
+
+  // Máscaras do cartão
+  $('ck-cartao-numero').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 19).replace(/(\d{4})(?=\d)/g, '$1 ');
+  });
+  $('ck-cartao-validade').addEventListener('input', e => {
+    const d = e.target.value.replace(/\D/g, '').slice(0, 4);
+    e.target.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+  });
+  $('ck-cartao-cvv').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
+  function limparCartao() {
+    // Nada do cartão fica na página depois de uma tentativa (o CVV sempre sai).
+    $('ck-cartao-cvv').value = '';
+  }
 
   function lerCookie(nome) {
     const achado = document.cookie.split('; ').find(c => c.startsWith(nome + '='));
@@ -1144,6 +1231,7 @@ const EXTRAS = [
   function etapa(qual) {
     form.hidden = qual !== 'form';
     $('ck-pix').hidden = qual !== 'pix';
+    $('ck-proc').hidden = qual !== 'proc';
     $('ck-pago').hidden = qual !== 'pago';
   }
 
@@ -1151,6 +1239,7 @@ const EXTRAS = [
     plano = PLANOS[novoPlano] ? novoPlano : 'aee-completo';
     $('ck-plano').textContent = 'Central AEE — ' + PLANOS[plano].nome;
     atualizar();
+    atualizarMetodo();
     limparErros();
     etapa('form');
     ultimoFoco = document.activeElement;
@@ -1190,50 +1279,92 @@ const EXTRAS = [
   function carregando(sim) {
     enviar.disabled = sim;
     enviar.classList.toggle('loading', sim);
-    enviar.querySelector('.js-label').textContent = sim ? 'GERANDO…' : 'GERAR PIX';
+    if (sim) enviar.querySelector('.js-label').textContent = metodo() === 'cartao' ? 'PROCESSANDO…' : 'GERANDO…';
+    else rotuloBotao();
   }
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
     limparErros();
     const ids = selecionados().map(x => x.id);
-    // Um pedido por combinação de plano + extras: reenviar sem mudar nada
-    // devolve a mesma cobrança (idempotência na ZuckPay).
-    const chave = plano + '|' + ids.join(',');
+    const forma = metodo();
+    // Um pedido por combinação de plano + extras + forma de pagamento:
+    // reenviar sem mudar nada devolve a mesma cobrança (idempotência na
+    // ZuckPay), então um clique duplo nunca cobra o cartão duas vezes.
+    const chave = plano + '|' + ids.join(',') + '|' + forma;
     if (!pedido || chave !== pedidoChave) {
       pedido = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(16) + Math.random().toString(16).slice(2)).replace(/[^a-zA-Z0-9-]/g, '');
       pedidoChave = chave;
     }
+    const corpo = {
+      plano:    plano,
+      extras:   ids,
+      pedido:   pedido,
+      nome:     $('ck-nome').value,
+      cpf:      $('ck-cpf').value,
+      email:    $('ck-email').value,
+      telefone: $('ck-telefone').value,
+      rastreio: rastreio()
+    };
+    if (forma === 'cartao') {
+      const [mes, ano] = $('ck-cartao-validade').value.split('/');
+      corpo.cartao = {
+        numero:  $('ck-cartao-numero').value,
+        titular: $('ck-cartao-titular').value,
+        mes:     mes || '',
+        ano:     ano || '',
+        cvv:     $('ck-cartao-cvv').value
+      };
+      corpo.parcelas = Number($('ck-cartao-parcelas').value);
+    }
     carregando(true);
     try {
-      const resp = await fetch(API + '/pix.php', {
+      const resp = await fetch(API + (forma === 'cartao' ? '/cartao.php' : '/pix.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plano:    plano,
-          extras:   ids,
-          pedido:   pedido,
-          nome:     $('ck-nome').value,
-          cpf:      $('ck-cpf').value,
-          email:    $('ck-email').value,
-          telefone: $('ck-telefone').value,
-          rastreio: rastreio()
-        })
+        body: JSON.stringify(corpo)
       });
       const dados = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         if (dados.debug) console.error('[zuckpay] detalhe do erro:', dados.debug);
-        const msg = (dados.erro || 'Não foi possível gerar o PIX.') + (dados.ref ? ` (código ${dados.ref})` : '');
+        const padrao = forma === 'cartao' ? 'Não foi possível processar o cartão.' : 'Não foi possível gerar o PIX.';
+        const msg = (dados.erro || padrao) + (dados.ref ? ` (código ${dados.ref})` : '');
         mostrarErros(dados.campos, dados.campos ? null : msg);
+        // Recusado: a próxima tentativa (outro cartão) precisa ser um pedido novo.
+        if (resp.status === 402) pedido = null;
         return;
       }
-      exibirPix(dados);
+      if (forma === 'cartao') resultadoCartao(dados);
+      else exibirPix(dados);
     } catch (_) {
       mostrarErros(null, 'Falha de conexão. Verifique sua internet e tente de novo.');
     } finally {
+      if (forma === 'cartao') limparCartao();
       carregando(false);
     }
   });
+
+  function resultadoCartao(dados) {
+    dados.metodo = 'cartao';
+    if (dados.status === 'PAID') return confirmarPago(dados);
+    if (dados.status === 'PENDING_3DS' && dados.redirect) {
+      // O banco pede autenticação (3D Secure); o resultado chega pelo webhook.
+      location.href = dados.redirect;
+      return;
+    }
+    etapa('proc');
+    modal.querySelector('.dialog').scrollTop = 0;
+    agendar(dados, 4);
+  }
+
+  function confirmarPago(dados) {
+    clearTimeout(poll); clearInterval(contagem);
+    $('ck-pago-email').textContent = $('ck-email').value;
+    etapa('pago');
+    modal.querySelector('.dialog').scrollTop = 0;
+    pedido = null;
+    if (window.fbq) fbq('track', 'Purchase', { value: Number(dados.valor), currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome });
+  }
 
   function exibirPix(dados) {
     $('ck-codigo').value = dados.qrcode || '';
@@ -1268,15 +1399,17 @@ const EXTRAS = [
     try {
       const r = await fetch(`${API}/status.php?transactionId=${encodeURIComponent(dados.transactionId)}`);
       const s = await r.json();
-      if (r.ok && s.pago) {
+      if (r.ok && s.pago) return confirmarPago(dados);
+      if (r.ok && s.final) {
         clearTimeout(poll); clearInterval(contagem);
-        $('ck-pago-email').textContent = $('ck-email').value;
-        etapa('pago');
-        pedido = null;
-        if (window.fbq) fbq('track', 'Purchase', { value: Number(dados.valor), currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome });
+        if (dados.metodo === 'cartao') {
+          // Cartão recusado depois da análise: volta ao formulário.
+          pedido = null;
+          etapa('form');
+          mostrarErros(null, 'Pagamento não aprovado pela operadora. Tente outro cartão ou pague com PIX.');
+        }
         return;
       }
-      if (r.ok && s.final) { clearTimeout(poll); clearInterval(contagem); return; }
       if (r.ok && s.proxima_consulta) proxima = s.proxima_consulta;
     } catch (_) { /* rede instável: a próxima tentativa resolve */ }
     agendar(dados, proxima);
@@ -1326,7 +1459,8 @@ const EXTRAS = [
           const v = item.venda;
           $('toast-av').textContent = v.nome.charAt(0);
           $('toast-txt').innerHTML = `<strong>${esc(v.nome)}</strong> comprou o <strong>${esc(v.plano.replace(/^Central AEE — /, ''))}</strong>`;
-          $('toast-sub').textContent = tempoAtras(v.minutos) + ' · compra confirmada';
+          const via = v.metodo === 'cartao' ? 'via cartão' : v.metodo === 'pix' ? 'via PIX' : 'compra confirmada';
+          $('toast-sub').textContent = tempoAtras(v.minutos) + ' · ' + via;
         } else {
           $('toast-av').textContent = item.av;
           $('toast-txt').innerHTML = item.txt;

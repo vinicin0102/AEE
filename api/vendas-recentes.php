@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Compras recentes e reais, para os pop-ups da página de vendas.
  *
  * GET ?planos=aee-basico,aee-completo
- * -> { vendas: [ { nome, plano, minutos } ] }   (mais recente primeiro)
+ * -> { vendas: [ { nome, plano, metodo, minutos } ] }   (mais recente primeiro)
  *
  * Lê o log de pagamentos confirmados gravado pelo webhook. Sem vendas, a
  * lista vem vazia e a página não mostra pop-up nenhum. Só sai o primeiro
@@ -65,6 +65,7 @@ foreach ($linhas as $linha) {
     $vendas[] = [
         'nome'    => $nome,
         'plano'   => (string) $planos[$venda['plano']]['nome'],
+        'metodo'  => in_array($venda['metodo'] ?? '', ['pix', 'cartao'], true) ? $venda['metodo'] : null,
         'minutos' => max(1, intdiv(time() - $quando, 60)),
     ];
     if (count($vendas) >= 10) {

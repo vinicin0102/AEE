@@ -3,13 +3,15 @@
 Página de vendas do **Central AEE**, o kit para o professor de Atendimento
 Educacional Especializado.
 
-Página estática (HTML + CSS + JS puro, sem framework) com checkout PIX da
-**ZuckPay** feito em PHP. Requisitos: PHP 8+ com a extensão cURL.
+Página estática (HTML + CSS + JS puro, sem framework) com checkout da
+**ZuckPay** feito em PHP: **PIX** e **cartão de crédito** nacional (BRL,
+parcelado). Requisitos: PHP 8+ com a extensão cURL.
 
 ```
 index.html               página + modal de checkout PIX
 api/pix.php              cria a cobrança (plano + extras, preço calculado no servidor)
-api/status.php           consulta o pagamento
+api/cartao.php           cobra no cartão (card_raw, fluxo nacional BRL)
+api/status.php           consulta o pagamento (PIX e cartão)
 api/webhook.php          confirma o pagamento e registra plano + extras comprados
 api/vendas-recentes.php  compras reais recentes, para os pop-ups da página
 api/diagnostico.php      checagem da integração (protegido por token)
@@ -42,12 +44,40 @@ valem para os dois planos.
    material. O log de pagamentos já grava `plano` e `extras` de cada venda
    (ex.: `"extras":["tea","pasta"]`), para saber o que entregar.
 
+## Cartão de crédito
+
+Fluxo **nacional** da ZuckPay (`POST /v3/card/charge` com `card_raw`), em até
+`max_parcelas` (padrão 3x; acima de 1x a operadora cobra juros do comprador).
+Configuração no `config.php`: `card_base`, `max_parcelas` e `limite_cartao`.
+Se mudar `max_parcelas`, mude também `MAX_PARCELAS` no fim do `index.html`.
+
+- **Aprovado** (`PAID`): a página mostra a confirmação na hora.
+- **Em análise** (`PENDING`): a página consulta o `status.php` até resolver.
+- **3D Secure** (`PENDING_3DS`): o comprador é levado ao banco; o resultado
+  chega pelo webhook.
+- **Recusado**: a página mostra o motivo do banco e oferece o PIX.
+
+Segurança do cartão:
+
+- Os dados passam pelo servidor só para serem repassados à ZuckPay. **Nunca**
+  são gravados, registrados em log ou devolvidos, nem com `debug` ligado. O
+  CVV é apagado do formulário depois de cada tentativa.
+- **O site precisa estar em HTTPS.** Sem HTTPS o número do cartão trafega
+  aberto.
+- **Anti card testing:** no máximo `limite_cartao.tentativas` tentativas por IP
+  a cada `limite_cartao.janela` segundos (padrão 5 em 30 min). Robôs usam
+  formulários de cartão abertos para testar cartões roubados; o limite evita
+  isso e as taxas de recusa que viriam junto.
+- O número passa pelo algoritmo de Luhn antes de ir à API, e cada tentativa
+  usa um `external_id_client` próprio: um clique duplo não cobra duas vezes.
+
 ## Pop-ups de compras
 
 Alternam compras reais com avisos verdadeiros sobre o produto (acesso após
 o PIX, modelos editáveis, garantia, complementos). As compras vêm só de vendas
 reais: `api/vendas-recentes.php` lê o log de pagamentos
 confirmados pelo webhook e devolve primeiro nome, plano e há quanto tempo
+e forma de pagamento — "comprou o Plano Completo · há 3 min · via PIX"
 (últimos 7 dias, até 10). Cada venda aparece uma vez por visita; sem vendas,
 não aparece pop-up nenhum. E-mail, CPF, telefone e valor nunca saem do
 servidor. Para desligar: `'vendas_recentes' => false` no `config.php`.
@@ -74,7 +104,7 @@ cobrança fica, por exemplo, "Central AEE + Kit Professor TEA + Pasta do Aluno".
 3. **Links do rodapé**: Termos de Uso, Política de Privacidade e Contato
    apontam para `#`.
 4. **Pixel/UTM**: há um comentário no `<head>` para os scripts deste
-   produto. O checkout já dispara `InitiateCheckout` e `Purchase` se o pixel
+   produto. O checkout (PIX e cartão) já dispara `InitiateCheckout` e `Purchase` se o pixel
    (`fbq`) estiver carregado, e repassa UTMs e cookies `_fbc`/`_fbp` à ZuckPay.
 
 Os depoimentos publicados são de clientes reais, com autorização. Não há

@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * Cria uma cobrança PIX na ZuckPay.
  *
- * POST { plano, extras?, nome, cpf, email, telefone, rastreio? }
+ * POST { plano, extras?, pedido?, nome, cpf, email, telefone, rastreio? }
  * -> { transactionId, qrcode, qrcode_image, checkout_url, expiracao, valor, itens }
  */
 
@@ -17,110 +17,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     responder(405, ['erro' => 'Método não permitido.']);
 }
 
-/**
- * Os planos (e principalmente o preço) vêm do config.php, no servidor.
- * O valor enviado pelo navegador é ignorado de propósito: se ele fosse
- * aceito, qualquer pessoa poderia editar o request e pagar R$ 0,01.
- */
-$planos = is_array($config['planos'] ?? null) ? $config['planos'] : [];
+// Plano, extras, preço (do servidor) e dados do comprador validados.
+$p = montarPedido($config, corpoJson());
 
-$corpo = corpoJson();
-
-$planoId = is_string($corpo['plano'] ?? null) ? $corpo['plano'] : '';
-if (!isset($planos[$planoId])) {
-    responder(400, ['erro' => 'Plano inválido.']);
-}
-$plano = $planos[$planoId];
-
-/**
- * Extras (order bumps): o navegador manda só os ids. Id desconhecido ou de
- * outro plano é recusado, e o valor de cada um vem do config.php.
- */
-$extrasDisponiveis = is_array($plano['extras'] ?? null) ? $plano['extras'] : [];
-$extrasPedidos = $corpo['extras'] ?? [];
-if (!is_array($extrasPedidos) || count($extrasPedidos) > count($extrasDisponiveis)) {
-    responder(400, ['erro' => 'Extras inválidos.']);
-}
-
-$extras = [];
-foreach ($extrasPedidos as $extraId) {
-    if (!is_string($extraId) || !isset($extrasDisponiveis[$extraId])) {
-        responder(400, ['erro' => 'Extras inválidos.']);
-    }
-    $extras[$extraId] = $extrasDisponiveis[$extraId];
-}
-
-$valorTotal = (float) $plano['valor'];
-$itens = [$plano['nome']];
-foreach ($extras as $extra) {
-    $valorTotal += (float) $extra['valor'];
-    $itens[] = $extra['nome'];
-}
-$valorTotal = round($valorTotal, 2);
-
-$nome     = trim((string) ($corpo['nome'] ?? ''));
-$cpf      = preg_replace('/\D/', '', (string) ($corpo['cpf'] ?? '')) ?? '';
-$email    = trim((string) ($corpo['email'] ?? ''));
-$telefone = preg_replace('/\D/', '', (string) ($corpo['telefone'] ?? '')) ?? '';
-
-$erros = [];
-if (mb_strlen($nome) < 3 || mb_strlen($nome) > 100) {
-    $erros['nome'] = 'Informe seu nome completo.';
-}
-if (!cpfValido($cpf)) {
-    $erros['cpf'] = 'CPF inválido.';
-}
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) {
-    $erros['email'] = 'E-mail inválido.';
-}
-if (strlen($telefone) < 10 || strlen($telefone) > 11) {
-    $erros['telefone'] = 'Telefone inválido. Use DDD + número.';
-}
-if ($erros !== []) {
-    responder(422, ['erro' => 'Dados inválidos.', 'campos' => $erros]);
-}
-
-/**
- * Idempotência: o navegador manda o mesmo "pedido" se o comprador clicar
- * duas vezes ou recarregar. Com external_id_client repetido, a ZuckPay
- * devolve a cobrança existente em vez de criar outra.
- */
-$pedido = (string) ($corpo['pedido'] ?? '');
-$pedido = preg_replace('/[^A-Za-z0-9-]/', '', $pedido) ?? '';
-if (strlen($pedido) < 8 || strlen($pedido) > 60) {
-    $pedido = bin2hex(random_bytes(12));
-}
-
-$externalId = ($plano['prefixo'] ?? 'AEE') . '-' . $planoId . '-' . $pedido;
-
-$payload = [
-    'nome'               => $nome,
-    'cpf'                => $cpf,
-    'valor'              => $valorTotal,
-    'email'              => $email,
-    'telefone'           => $telefone,
-    'urlnoty'            => $config['webhook_url'],
-    'descricao'          => mb_substr(implode(' + ', $itens), 0, 250),
-    'external_id_client' => $externalId,
-];
-
-// Vincula a venda ao produto cadastrado no painel (opcional na API).
-if (!empty($plano['product_id'])) {
-    $payload['product_id'] = (int) $plano['product_id'];
-}
-
-$rastreio = is_array($corpo['rastreio'] ?? null) ? $corpo['rastreio'] : [];
-$permitidos = [
-    'utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term',
-    'fbc', 'fbp', 'fbclid', 'gclid', 'ttclid', 'wbraid', 'gbraid',
-    'kclid', 'click_id', 'src', 'sck',
-];
-foreach ($permitidos as $chave) {
-    $valor = $rastreio[$chave] ?? null;
-    if (is_string($valor) && $valor !== '') {
-        $payload[$chave] = mb_substr($valor, 0, 255);
-    }
-}
+$externalId = ($p['plano']['prefixo'] ?? 'AEE') . '-' . $p['planoId'] . '-' . $p['pedido'];
+$payload = $p['payload'] + ['external_id_client' => $externalId];
 
 [$status, $resposta] = chamarZuckpay($config, 'POST', '/qrcode', $payload);
 
@@ -157,12 +58,13 @@ if ($status !== 200 || empty($resposta['transactionId'])) {
 
 // Guarda o que foi comprado, para o webhook saber quais extras entregar.
 registrarPedido($config, $externalId, [
-    'plano'  => $planoId,
+    'plano'         => $p['planoId'],
+    'metodo'        => 'pix',
     // Só o primeiro nome, usado nos pop-ups de compras recentes.
-    'primeiro_nome' => primeiroNome($nome),
-    'extras' => array_keys($extras),
-    'itens'  => $itens,
-    'valor'  => $valorTotal,
+    'primeiro_nome' => primeiroNome($p['nome']),
+    'extras'        => array_keys($p['extras']),
+    'itens'         => $p['itens'],
+    'valor'         => $p['valor'],
 ]);
 
 // Devolve só o que o navegador precisa. Nada de credencial, nada de valor líquido.
@@ -172,8 +74,8 @@ responder(200, [
     'qrcode_image'  => (string) ($resposta['qrcode_image'] ?? ''),
     'checkout_url'  => (string) ($resposta['checkout_url'] ?? ''),
     'expiracao'     => (int) ($resposta['calendar']['expiration'] ?? 1200),
-    'valor'         => $valorTotal,
-    'plano'         => $plano['nome'],
-    'itens'         => $itens,
-    'pedido'        => $pedido,
+    'valor'         => $p['valor'],
+    'plano'         => $p['plano']['nome'],
+    'itens'         => $p['itens'],
+    'pedido'        => $p['pedido'],
 ]);

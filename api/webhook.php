@@ -110,7 +110,7 @@ if (!$jaProcessado) {
         'nome'               => $transacao['nome'] ?? null,
         'email'              => $transacao['email'] ?? ($resposta['email'] ?? null),
         'valor'              => $resposta['amount'] ?? ($transacao['amount'] ?? null),
-        'metodo'             => $resposta['payment_method'] ?? ($transacao['payment_method'] ?? null),
+        'metodo'             => $pedido['metodo'] ?? ($resposta['payment_method'] ?? ($transacao['payment_method'] ?? null)),
         'produto'            => $transacao['product_name'] ?? null,
         'confirmado_em'      => $resposta['confirmed_date'] ?? ($transacao['confirmed_date'] ?? null),
         'registrado_em'      => date('c'),

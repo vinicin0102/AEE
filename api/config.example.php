@@ -37,6 +37,19 @@ return [
     'api_base' => 'https://www.zuckpay.com.br/conta/v3/pix',
 
     /**
+     * Cartão de crédito nacional (BRL). Mesmo host do api_base; se omitido,
+     * é derivado dele (/v3/pix -> /v3/card).
+     */
+    'card_base' => 'https://www.zuckpay.com.br/conta/v3/card',
+
+    // Parcelas oferecidas no cartão (1 a 12). Acima de 1x a operadora cobra
+    // juros do comprador; em produto barato, poucas parcelas bastam.
+    'max_parcelas' => 3,
+
+    // Anti "card testing": tentativas de cartão por IP dentro da janela (s).
+    'limite_cartao' => ['tentativas' => 5, 'janela' => 1800],
+
+    /**
      * Planos vendidos na página.
      *
      * O preço fica AQUI, no servidor. O navegador envia apenas o id do plano
