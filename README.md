@@ -154,8 +154,9 @@ inventados: notificação de compra falsa é propaganda enganosa (CDC, art. 37).
 1. **Prévias da seção "Veja o que você recebe"**: páginas de exemplo em HTML.
    Troque pelas capturas reais das páginas entregues e remova a legenda
    "Prévias ilustrativas".
-2. **Quantidade de materiais**: a página diz "Dezenas de materiais". Só troque
-   por um número quando o conteúdo final tiver essa quantidade.
+2. **Quantidade de materiais**: 150 modelos em Word no Plano Completo
+   (informado pelo produtor). Se mudar, atualize a apresentação, o card do
+   Plano Completo e o texto da oferta.
 3. **Links do rodapé**: Termos de Uso, Política de Privacidade e Contato
    apontam para `#`.
 

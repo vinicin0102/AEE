@@ -121,6 +121,12 @@ section{padding:64px 0;position:relative;overflow-x:clip}
 .hero h1{font-size:clamp(32px,7.4vw,54px);font-weight:800}
 .hero .sub{font-size:clamp(16.5px,2.8vw,19px);color:var(--muted);margin-top:18px;max-width:560px}
 .hero .cta-area{margin-top:28px}
+.hero-destaque{display:flex;gap:14px;align-items:flex-start;margin-top:20px;max-width:580px;background:#fff;border:2px solid var(--yellow);border-radius:16px;padding:16px 18px;box-shadow:0 10px 26px rgba(250,204,21,.18)}
+.hero-destaque .num{flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1;text-align:center}
+.hero-destaque .num small{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;margin-top:3px;opacity:.9}
+.hero-destaque p{font-size:15px;line-height:1.5;color:var(--ink)}
+.hero-destaque strong{color:var(--navy)}
+.hero-destaque mark{background:linear-gradient(transparent 55%,rgba(250,204,21,.55) 55%);color:var(--navy);font-weight:800;padding:0 2px}
 
 /* Mockup: pasta digital */
 .mock{position:relative;max-width:520px;margin:0 auto 64px;width:100%}
@@ -513,6 +519,10 @@ body{padding-bottom:80px}
       <div class="brand"><span class="brand-mark"><svg class="ico"><use href="#i-puzzle"/></svg></span>Central AEE</div>
       <h1>Pare de começar seu trabalho do AEE <span class="grad">do zero.</span></h1>
       <p class="sub">Tenha documentos, fichas, planejamentos, registros e recursos organizados em um único kit, prontos para editar e adaptar à realidade dos seus alunos.</p>
+      <div class="hero-destaque">
+        <span class="num" aria-hidden="true">150<small>MODELOS</small></span>
+        <p><strong>150 modelos prontos em Word, com o texto técnico já escrito.</strong> Você troca o nome do aluno, ajusta o que é específico dele e entrega. O que tomava o seu fim de semana passa a levar <mark>15 minutos</mark>.</p>
+      </div>
       <div class="cta-area">
         <a href="#oferta" class="btn btn-primary btn-hero">QUERO ACESSAR O CENTRAL AEE <svg class="ico"><use href="#i-arrow"/></svg></a>
         <ul class="checks">
@@ -584,9 +594,9 @@ body{padding-bottom:80px}
       <span class="eyebrow t-purple"><span class="dot"></span>Apresentando</span>
       <h2 class="h2">Conheça o <span class="grad">CENTRAL AEE</span></h2>
       <p class="lead" style="margin-left:0">Uma biblioteca de materiais para ajudar você a organizar sua rotina de Atendimento Educacional Especializado com muito mais praticidade.</p>
-      <!-- Quantidade: troque "Dezenas de" por um número (ex.: "+100") só quando o conteúdo final tiver essa quantidade. -->
+      <!-- 150 modelos = Plano Completo (informado pelo produtor). -->
       <div class="stats" style="margin-top:28px">
-        <div class="stat t-blue"><span class="f-ico"><svg class="ico"><use href="#i-layers"/></svg></span><div><strong>DEZENAS DE MATERIAIS</strong><span>em um só lugar</span></div></div>
+        <div class="stat t-blue"><span class="f-ico"><svg class="ico"><use href="#i-layers"/></svg></span><div><strong>150 MODELOS EM WORD</strong><span>com o texto técnico já escrito</span></div></div>
         <div class="stat t-pink"><span class="f-ico"><svg class="ico"><use href="#i-pen"/></svg></span><div><strong>EDITÁVEIS</strong><span>para adaptar a cada aluno</span></div></div>
         <div class="stat t-green"><span class="f-ico"><svg class="ico"><use href="#i-folder"/></svg></span><div><strong>ORGANIZADOS POR CATEGORIA</strong><span>fácil de encontrar</span></div></div>
       </div>
@@ -833,13 +843,14 @@ body{padding-bottom:80px}
     <div class="sec-head reveal">
       <span class="eyebrow t-blue"><span class="dot"></span>Oferta</span>
       <h2 class="h2">Comece a organizar sua rotina de AEE hoje.</h2>
+      <p class="lead">No Plano Completo são <strong>150 modelos prontos em Word</strong>, com o texto técnico já escrito. Você troca o nome do aluno, ajusta o que é específico dele e entrega. O que tomava o seu fim de semana passa a levar <strong>15 minutos</strong>.</p>
     </div>
     <div class="plans">
       <div class="offer basic">
         <div class="offer-head"><strong>PLANO BÁSICO</strong><span>A documentação essencial do AEE</span></div>
         <div class="offer-body">
           <ul class="offer-list">
-          <li class="t-blue"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Documentos e modelos</li>
+          <li class="t-blue"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Modelos prontos em Word</li>
           <li class="t-purple"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Avaliações</li>
           <li class="t-pink"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Planejamento</li>
           <li class="t-orange"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Registros</li>
@@ -860,7 +871,7 @@ body{padding-bottom:80px}
         <div class="offer-head"><span class="ribbon">MAIS COMPLETO</span><strong>PLANO COMPLETO</strong><span>O kit completo para o professor de AEE</span></div>
         <div class="offer-body">
           <ul class="offer-list">
-          <li class="t-blue"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Documentos e modelos</li>
+          <li class="t-blue"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span><strong>150 modelos prontos em Word</strong></li>
           <li class="t-purple"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Avaliações</li>
           <li class="t-pink"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Planejamento</li>
           <li class="t-orange"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span>Registros</li>
@@ -1125,9 +1136,9 @@ const DESCONTO_CARTAO = 0.05;
 // exibir o texto genérico, que não promete nada que possa não existir.
 const FAQ = {
   entrega:   '',   // ex.: 'Assim que o PIX é confirmado, você recebe no e-mail o link da pasta no Google Drive.'
-  formatos:  '',   // ex.: 'Sim. Os modelos estão em Word (.docx) e alguns em PDF para impressão.'
+  formatos:  'Sim. Os modelos estão em Word, com o texto técnico já escrito: você troca o nome do aluno, ajusta o que é específico dele e entrega.',
   acesso:    '',   // ex.: 'O acesso é vitalício: os arquivos são seus para baixar e guardar.'
-  programas: ''    // ex.: 'Word, Google Docs ou LibreOffice (gratuito) abrem os arquivos .docx.'
+  programas: 'Basta um editor que abra arquivos do Word: o próprio Word, o Google Docs ou o LibreOffice (gratuito).'
 };
 
 const FAQ_PADRAO = {
