@@ -124,11 +124,30 @@ section{padding:64px 0;position:relative;overflow-x:clip}
 .brand-mark .ico{width:21px;height:21px;stroke-width:2.2}
 .hero h1{font-size:clamp(32px,7.4vw,54px);font-weight:800}
 .hero .sub{font-size:clamp(16.5px,2.8vw,19px);color:var(--muted);margin-top:18px;max-width:560px}
-.hero .cta-area{margin-top:28px}
+.hero .cta-area{margin-top:22px}
+@media (max-width:959px){.hero .sub{display:none}.hero{padding-top:28px}.hero .brand{margin-bottom:18px}}
+@media (min-width:960px){.hero{padding-top:28px!important}.hero .brand{margin-bottom:16px}.hero h1{font-size:48px}.hero .sub{margin-top:12px}}
 .card-wide{grid-column:1/-1}
 .tag-plan.tag-extra{color:#8A6A00;background:var(--yellow-50);border:1px solid #F5DDA6}
 .arquivos{text-align:center;margin:28px auto 0;padding-top:22px;border-top:1px dashed #C9D6F5;max-width:640px;color:var(--muted);font-size:16px}
 .arquivos strong{color:var(--navy);background:linear-gradient(transparent 55%,rgba(250,204,21,.55) 55%);padding:0 2px}
+.hero-bonus{display:flex;gap:10px;align-items:center;margin-top:12px;max-width:580px;background:linear-gradient(90deg,#EAFBF0,#F3EEFF);border:1.5px dashed var(--green);border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.4;color:var(--ink)}
+.hero-bonus .gift{font-size:22px;flex:none}
+.hero-bonus strong{color:var(--navy)}
+.guia{max-width:980px;margin:0 auto 34px;background:#fff;border:2px solid var(--green);border-radius:22px;padding:24px 22px;box-shadow:0 14px 34px rgba(22,163,74,.14);position:relative;overflow:hidden}
+.guia::before{content:"";position:absolute;inset:0 0 auto;height:6px;background:var(--rainbow)}
+.guia .kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.08em;color:#fff;background:var(--green);padding:6px 14px;border-radius:999px}
+.guia h3{font-size:clamp(19px,3.6vw,24px);font-weight:800;margin-top:12px}
+.guia > p{color:var(--muted);margin-top:6px;max-width:700px}
+.passos{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;align-items:stretch;gap:0}
+.passos li{display:flex;align-items:center;gap:12px;background:var(--c50);border:1px solid color-mix(in srgb,var(--c) 25%,transparent);border-radius:14px;padding:11px 14px;font-weight:700;color:var(--navy);font-size:15px}
+.passos li b{flex:none;width:30px;height:30px;border-radius:9px;background:var(--c);color:#fff;display:grid;place-items:center;font-size:14px}
+.passos .seta{align-self:center;color:var(--muted);font-size:16px;line-height:1;padding:3px 0;background:none;border:0}
+@media (min-width:960px){
+  .passos{flex-direction:row;align-items:center;gap:6px}
+  .passos li:not(.seta){flex:1 1 0;min-width:0;flex-direction:column;text-align:center;padding:14px 8px;font-size:13.5px;gap:8px;min-height:104px;justify-content:center}
+  .passos .seta{flex:none;padding:0;transform:rotate(-90deg)}
+}
 .hero-destaque{display:flex;gap:14px;align-items:flex-start;margin-top:20px;max-width:580px;background:#fff;border:2px solid var(--yellow);border-radius:16px;padding:16px 18px;box-shadow:0 10px 26px rgba(250,204,21,.18)}
 .hero-destaque .num{flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1;text-align:center}
 .hero-destaque .num small{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;margin-top:3px;opacity:.9}
@@ -528,11 +547,12 @@ body{padding-bottom:80px}
     <div>
       <div class="brand"><span class="brand-mark"><svg class="ico"><use href="#i-puzzle"/></svg></span>Central AEE</div>
       <h1>Pare de começar seu trabalho do AEE <span class="grad">do zero.</span></h1>
-      <p class="sub">Tenha documentos, fichas, planejamentos, registros e recursos organizados em um único kit, prontos para editar e adaptar à realidade dos seus alunos.</p>
+      <p class="sub">Documentos, fichas, planejamentos e registros do AEE organizados em um único kit, prontos para editar.</p>
       <div class="hero-destaque">
         <span class="num" aria-hidden="true">+150<small>MODELOS</small></span>
         <p><strong>+150 modelos prontos em Word, com o texto técnico já escrito.</strong> Você troca o nome do aluno, ajusta o que é específico dele e entrega. O que tomava o seu fim de semana passa a levar <mark>15 minutos</mark>.</p>
       </div>
+      <a class="hero-bonus" href="#guia" style="text-decoration:none"><span class="gift" aria-hidden="true">🎁</span><span><strong>Bônus: Guia Comece por Aqui</strong> — o passo a passo para usar a Central na sua rotina do AEE desde o primeiro dia.</span></a>
       <div class="cta-area">
         <a href="#oferta" class="btn btn-primary btn-hero">QUERO ACESSAR O CENTRAL AEE <svg class="ico"><use href="#i-arrow"/></svg></a>
         <ul class="checks">
@@ -850,6 +870,24 @@ body{padding-bottom:80px}
       <span class="eyebrow t-blue"><span class="dot"></span>Oferta</span>
       <h2 class="h2">Comece a organizar sua rotina de AEE hoje.</h2>
       <p class="lead">No Plano Completo são <strong>+150 modelos prontos em Word</strong>, com o texto técnico já escrito. Você troca o nome do aluno, ajusta o que é específico dele e entrega. O que tomava o seu fim de semana passa a levar <strong>15 minutos</strong>.</p>
+    </div>
+    <div class="guia reveal" id="guia">
+      <span class="kicker">🎁 AO GARANTIR A CENTRAL AEE</span>
+      <h3>Você também recebe o Guia Comece por Aqui</h3>
+      <p>Ele mostra exatamente como organizar seus materiais e utilizar a Central na rotina do AEE.</p>
+      <ol class="passos">
+        <li class="t-blue"><b>1</b>Comece por aqui</li>
+        <li class="seta" aria-hidden="true">↓</li>
+        <li class="t-purple"><b>2</b>Avalie o aluno</li>
+        <li class="seta" aria-hidden="true">↓</li>
+        <li class="t-green"><b>3</b>Monte seu planejamento</li>
+        <li class="seta" aria-hidden="true">↓</li>
+        <li class="t-orange"><b>4</b>Registre os atendimentos</li>
+        <li class="seta" aria-hidden="true">↓</li>
+        <li class="t-pink"><b>5</b>Acompanhe a evolução</li>
+        <li class="seta" aria-hidden="true">↓</li>
+        <li class="t-teal"><b>6</b>Organize seus relatórios</li>
+      </ol>
     </div>
     <div class="plans">
       <div class="offer basic">
