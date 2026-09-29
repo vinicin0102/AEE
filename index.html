@@ -399,6 +399,7 @@ body{padding-bottom:80px}
 .pay-tabs label:has(input:checked){border-color:var(--blue);background:var(--blue-50)}
 .pay-tabs label:has(input:focus-visible){outline:3px solid var(--blue-50);outline-offset:2px}
 .pay-tabs .ico{width:20px;height:20px}
+.pay-tabs.so-pix{grid-template-columns:1fr}
 .pay-tabs .off{font-size:10.5px;font-weight:800;color:#fff;background:var(--green);padding:2px 6px;border-radius:999px;letter-spacing:.03em}
 .summary-row.desc{color:var(--green);font-weight:700}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -872,7 +873,7 @@ body{padding-bottom:80px}
           <div class="price">
             <div class="value"><sup>R$</sup>27,90</div>
             <span class="once">pagamento único</span>
-            <span class="pix"><svg class="ico" style="width:14px;height:14px"><use href="#i-card"/></svg>5% OFF no cartão</span>
+            <span class="pix js-cartao" hidden><svg class="ico" style="width:14px;height:14px"><use href="#i-card"/></svg>5% OFF no cartão</span>
           </div>
           <button type="button" class="btn btn-primary btn-block js-comprar" data-plano="aee-completo"><svg class="ico"><use href="#i-cart"/></svg>QUERO O PLANO COMPLETO</button>
         </div>
@@ -928,7 +929,7 @@ body{padding-bottom:80px}
       </details>
       <details class="t-green">
         <summary>É pagamento único?<svg class="ico"><use href="#i-plus"/></svg></summary>
-        <div class="ans">Sim. O pagamento é feito uma única vez, sem mensalidade, via PIX ou cartão de crédito (à vista ou parcelado, com 5% de desconto no cartão). Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.</div>
+        <div class="ans" id="faq-pagamento">Sim. O pagamento é feito uma única vez, via PIX, sem mensalidade. Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.</div>
       </details>
       <details class="t-teal">
         <summary>Tenho acesso por quanto tempo?<svg class="ico"><use href="#i-plus"/></svg></summary>
@@ -1029,7 +1030,7 @@ body{padding-bottom:80px}
         <p class="bumps-title" style="margin-bottom:10px">Forma de pagamento</p>
         <div class="pay-tabs" role="radiogroup" aria-label="Forma de pagamento">
           <label><input type="radio" name="metodo" value="pix"><svg class="ico"><use href="#i-bolt"/></svg>PIX</label>
-          <label><input type="radio" name="metodo" value="cartao"><svg class="ico"><use href="#i-card"/></svg>Cartão <span class="off">5% OFF</span></label>
+          <label class="js-cartao" hidden><input type="radio" name="metodo" value="cartao"><svg class="ico"><use href="#i-card"/></svg>Cartão <span class="off">5% OFF</span></label>
         </div>
         <p class="hint" id="ck-hint">Preencha seus dados e escolha a forma de pagamento para continuar.</p>
       </div>
@@ -1246,6 +1247,7 @@ const EXTRAS = [
     enviar.querySelector('.js-label').textContent = metodo() === 'cartao' ? `PAGAR ${brl(total())}` : 'GERAR PIX';
   }
   form.querySelectorAll('input[name="metodo"]').forEach(r => r.addEventListener('change', () => {
+    pixAutomatico = false;
     atualizarMetodo();
     verificarEtapa();
     if (window.fbq && !pixelMetodo.has(metodo())) {
@@ -1399,9 +1401,7 @@ const EXTRAS = [
         mostrarErros(dados.campos, dados.campos ? null : msg);
         // Cartão desabilitado na conta: muda para o PIX e mantém o aviso.
         if (dados.cartaoIndisponivel) {
-          const pix = form.querySelector('input[name="metodo"][value="pix"]');
-          pix.checked = true;
-          pix.dispatchEvent(new Event('change'));
+          aplicarFormas(false);
           $('ck-erro').textContent = dados.erro;
         }
         // Recusado: a próxima tentativa (outro cartão) precisa ser um pedido novo.
@@ -1611,6 +1611,32 @@ const EXTRAS = [
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) fecharLb(); });
 
   popups();
+
+  /* ---------- formas de pagamento disponíveis ---------- */
+  // O cartão (e o "5% OFF") só aparece quando a ZuckPay confirma que está
+  // ativo na conta. Só com PIX, ele já vem selecionado.
+  let pixAutomatico = false;
+  function aplicarFormas(cartao) {
+    document.querySelectorAll('.js-cartao').forEach(el => { el.hidden = !cartao; });
+    document.querySelector('.pay-tabs').classList.toggle('so-pix', !cartao);
+    $('faq-pagamento').textContent = cartao
+      ? 'Sim. O pagamento é feito uma única vez, sem mensalidade, via PIX ou cartão de crédito (à vista ou parcelado, com 5% de desconto no cartão). Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.'
+      : 'Sim. O pagamento é feito uma única vez, via PIX, sem mensalidade. Os complementos opcionais, se escolhidos no checkout, entram no mesmo pagamento.';
+    const pix = form.querySelector('input[name="metodo"][value="pix"]');
+    const cartaoInput = form.querySelector('input[name="metodo"][value="cartao"]');
+    if (!cartao) {
+      if (cartaoInput.checked || !metodo()) { cartaoInput.checked = false; pix.checked = true; pixAutomatico = true; }
+    } else if (pixAutomatico) {
+      pix.checked = false; pixAutomatico = false;
+    }
+    atualizarMetodo();
+    verificarEtapa();
+  }
+  aplicarFormas(false);
+  fetch(`${API}/formas-pagamento`)
+    .then(r => (r.ok ? r.json() : null))
+    .then(d => { if (d) aplicarFormas(d.cartao === true); })
+    .catch(() => { /* sem resposta: segue só com PIX */ });
 
   /* ---------- barra fixa e animações ---------- */
   const sticky = $('sticky');

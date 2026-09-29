@@ -84,6 +84,14 @@ desconto sobre o total.
 - **3D Secure** (`PENDING_3DS`): o comprador vai ao banco; o resultado chega pelo webhook.
 - **Recusado**: mostra o motivo do banco e oferece o PIX.
 
+**Cartão só aparece quando está ativo.** A página consulta
+`/api/formas-pagamento`, que pergunta à ZuckPay (`GET /v3/card/keys`, cache de
+5 min). Se a ZuckPay disser que o cartão está desativado (`enabled:false`, ou
+403/503 como "Pagamento via cartão está desativado."), a página mostra só o
+PIX — sem a aba de cartão e sem o "5% OFF" — e o PIX já vem selecionado. Quando
+a ZuckPay ativar o cartão na conta, ele volta a aparecer sozinho. O
+`/api/diagnostico` mostra a resposta do `/card/keys` em `card_keys`.
+
 Os dados do cartão passam pela função só para serem repassados à ZuckPay:
 nunca são gravados, registrados em log ou devolvidos, nem com `DEBUG=1`. O CVV
 é apagado do formulário após cada tentativa. O número passa por Luhn antes da
