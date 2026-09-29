@@ -1397,6 +1397,13 @@ const EXTRAS = [
         const padrao = forma === 'cartao' ? 'Não foi possível processar o cartão.' : 'Não foi possível gerar o PIX.';
         const msg = (dados.erro || padrao) + (dados.ref ? ` (código ${dados.ref})` : '');
         mostrarErros(dados.campos, dados.campos ? null : msg);
+        // Cartão desabilitado na conta: muda para o PIX e mantém o aviso.
+        if (dados.cartaoIndisponivel) {
+          const pix = form.querySelector('input[name="metodo"][value="pix"]');
+          pix.checked = true;
+          pix.dispatchEvent(new Event('change'));
+          $('ck-erro').textContent = dados.erro;
+        }
         // Recusado: a próxima tentativa (outro cartão) precisa ser um pedido novo.
         if (resp.status === 402) pedido = null;
         return;

@@ -68,6 +68,13 @@ export const POST = rota(async (request) => {
 
   if (status === 429) return json(429, { erro: 'Muitas tentativas em pouco tempo. Aguarde alguns minutos ou pague com PIX.' });
 
+  // 403: cartão não habilitado na conta ZuckPay ("não está disponível para
+  // este vendedor") ou IP bloqueado. Não é culpa do comprador: manda para o PIX.
+  if (status === 403) {
+    console.error('[cartao] HTTP 403 — cartão indisponível para a conta:', JSON.stringify(dados));
+    return json(503, { erro: 'Pagamento com cartão indisponível no momento. Por favor, pague com PIX.', cartaoIndisponivel: true });
+  }
+
   const situacao = String(dados.status ?? '').toUpperCase();
 
   // Recusa do banco: o motivo é seguro de mostrar e ajuda o comprador.
