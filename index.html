@@ -1229,6 +1229,7 @@ const EXTRAS = [
     if (etapa2.hidden && dadosOk() && metodo()) {
       etapa2.hidden = false;
       $('ck-hint').hidden = true;
+      pixelPagamento();
     }
   }
   form.addEventListener('input', verificarEtapa);
@@ -1250,11 +1251,16 @@ const EXTRAS = [
     pixAutomatico = false;
     atualizarMetodo();
     verificarEtapa();
-    if (window.fbq && !pixelMetodo.has(metodo())) {
-      pixelMetodo.add(metodo());
-      fbq('track', 'AddPaymentInfo', { value: total() / 100, currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome, payment_type: metodo() });
-    }
+    if (!$('ck-etapa2').hidden) pixelPagamento();
   }));
+  // AddPaymentInfo: dados preenchidos + forma de pagamento definida (clicada
+  // ou já selecionada, como no "só PIX"). Uma vez por forma de pagamento.
+  function pixelPagamento() {
+    const m = metodo();
+    if (!window.fbq || !m || pixelMetodo.has(m)) return;
+    pixelMetodo.add(m);
+    fbq('track', 'AddPaymentInfo', { value: total() / 100, currency: 'BRL', content_name: 'Central AEE — ' + PLANOS[plano].nome, payment_type: m });
+  }
   lista.addEventListener('change', atualizarMetodo);
 
   // Máscaras do cartão
