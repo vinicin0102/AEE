@@ -84,6 +84,10 @@ desconto sobre o total.
 - **3D Secure** (`PENDING_3DS`): o comprador vai ao banco; o resultado chega pelo webhook.
 - **Recusado**: mostra o motivo do banco e oferece o PIX.
 
+**Chave geral:** `CARTAO_ATIVO` em `lib/config.js`. Hoje está `false`: o site
+vende só no PIX, mesmo que a ZuckPay ative o cartão. Para ligar, mude para
+`true` (o cartão então aparece quando a ZuckPay confirmar que está ativo).
+
 **Cartão só aparece quando está ativo.** A página consulta
 `/api/formas-pagamento`, que pergunta à ZuckPay (`GET /v3/card/keys`, cache de
 5 min). Se a ZuckPay disser que o cartão está desativado (`enabled:false`, ou

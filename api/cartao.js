@@ -10,11 +10,15 @@
 import crypto from 'node:crypto';
 import { rota, json, Falha, corpoJson, montarPedido, zuckpay, urlWebhook, registrarPedido,
   primeiroNome, luhnValido, dentroDoLimite, ipDe, detalheDebug, configCartao } from '../lib/core.js';
-import { MAX_PARCELAS, LIMITE_CARTAO } from '../lib/config.js';
+import { MAX_PARCELAS, LIMITE_CARTAO, CARTAO_ATIVO } from '../lib/config.js';
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 
 export const POST = rota(async (request) => {
+  if (!CARTAO_ATIVO) {
+    return json(503, { erro: 'Pagamento com cartão indisponível no momento. Por favor, pague com PIX.', cartaoIndisponivel: true });
+  }
+
   // Anti card testing: robôs usam formulários de cartão para testar cartões roubados.
   if (!(await dentroDoLimite('cartao', ipDe(request), LIMITE_CARTAO.tentativas, LIMITE_CARTAO.janela))) {
     return json(429, { erro: 'Muitas tentativas com cartão. Aguarde alguns minutos ou pague com PIX.' });
