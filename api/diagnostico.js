@@ -3,7 +3,7 @@
  * Só responde com a variável DEBUG_TOKEN definida e o token certo.
  */
 import crypto from 'node:crypto';
-import { rota, json, env, apiBase, zuckpay, kvConfigurado, kv } from '../lib/core.js';
+import { rota, json, env, apiBase, zuckpay, kvConfigurado, kv, configCartao } from '../lib/core.js';
 
 const mascarar = (v) => (v ? v.slice(0, 4) + '…' + v.slice(-2) : '(vazio)');
 
@@ -32,6 +32,7 @@ export const GET = rota(async (request) => {
     : status === 403 ? 'BLOQUEADO — IP whitelist ou permissão'
     : status === 0 ? 'FALHA DE CONEXÃO' : `HTTP ${status}`;
   r.cartao_nacional = dados.nationalCard?.enabled === true ? 'habilitado' : 'NÃO habilitado na conta';
+  r.card_keys = (await configCartao()).resumo;
 
   return json(200, r);
 });

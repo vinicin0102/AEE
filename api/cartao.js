@@ -9,7 +9,7 @@
  */
 import crypto from 'node:crypto';
 import { rota, json, Falha, corpoJson, montarPedido, zuckpay, urlWebhook, registrarPedido,
-  primeiroNome, luhnValido, dentroDoLimite, ipDe, detalheDebug } from '../lib/core.js';
+  primeiroNome, luhnValido, dentroDoLimite, ipDe, detalheDebug, configCartao } from '../lib/core.js';
 import { MAX_PARCELAS, LIMITE_CARTAO } from '../lib/config.js';
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
@@ -45,13 +45,23 @@ export const POST = rota(async (request) => {
   if (!Number.isInteger(parcelas) || parcelas < 1 || parcelas > MAX_PARCELAS) campos['cartao-parcelas'] = 'Número de parcelas inválido.';
   if (Object.keys(campos).length) throw new Falha(422, { erro: 'Confira os dados do cartão.', campos });
 
+  // Pergunta à ZuckPay como o cartão está para estas credenciais. Se ela diz
+  // que está desligado, nem tenta cobrar; se informa o endpoint de cobrança,
+  // usa exatamente ele.
+  const cfg = await configCartao();
+  if (cfg.habilitado === false) {
+    console.error('[cartao] /card/keys diz que o cartão nacional está desligado:', JSON.stringify(cfg.resumo));
+    return json(503, { erro: 'Pagamento com cartão indisponível no momento. Por favor, pague com PIX.', cartaoIndisponivel: true });
+  }
+  const endpoint = cfg.endpoint || '/card/charge';
+
   // Grava ANTES de cobrar: numa aprovação imediata o webhook pode chegar antes desta resposta.
   await registrarPedido(p.externalId, {
     plano: p.planoId, metodo: 'cartao', primeiro_nome: primeiroNome(p.nome), extras: p.extrasIds,
     valor: p.centavos / 100, parcelas,
   });
 
-  const { status, dados } = await zuckpay('POST', '/card/charge', {
+  const { status, dados } = await zuckpay('POST', endpoint, {
     ...p.payload,
     urlnoty: urlWebhook(request),
     currency: 'BRL',
@@ -71,7 +81,8 @@ export const POST = rota(async (request) => {
   // 403: cartão não habilitado na conta ZuckPay ("não está disponível para
   // este vendedor") ou IP bloqueado. Não é culpa do comprador: manda para o PIX.
   if (status === 403) {
-    console.error('[cartao] HTTP 403 — cartão indisponível para a conta:', JSON.stringify(dados));
+    console.error('[cartao] HTTP 403 — cartão indisponível para a conta:', JSON.stringify(dados),
+      '| endpoint:', endpoint, '| /card/keys:', JSON.stringify(cfg.resumo));
     return json(503, { erro: 'Pagamento com cartão indisponível no momento. Por favor, pague com PIX.', cartaoIndisponivel: true });
   }
 
